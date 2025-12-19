@@ -46,35 +46,32 @@ class DianController extends Controller
      */
     public function numeraciones()
     {
-        $numeraciones = DB::table('dian_numerations')
-            ->orderBy('active', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $numeraciones = DB::table('dian_numerations')->get();
 
-        // Obtener consecutivos para vincular
+        // 2. Obtener consecutivos vinculados con los nombres de columna correctos
         $consecutivos = DB::table('consecutivos')
-            ->select('consecutivos.*')
+            ->select('consecutivos.*', 'dian_numerations.prefix as dian_prefijo')
             ->leftJoin('dian_numerations', 'consecutivos.dian_numeration_id', '=', 'dian_numerations.id')
             ->get()
             ->map(function ($consecutivo) {
                 return (object)[
                     'id' => $consecutivo->id,
-                    'nombre' => $consecutivo->tipo_documento ?? 'Consecutivo #' . $consecutivo->id,
-                    'prefijo' => $consecutivo->prefijo,
+                    'nombre' => $consecutivo->tipo_documento, // Según tu migración
+                    'prefijo' => $consecutivo->dian_prefijo ?? $consecutivo->prefijo ?? 'N/A',
                     'dian_numeration_id' => $consecutivo->dian_numeration_id,
                 ];
             });
 
-        // Stats
+        // 3. Stats (Tu bloque actual, validando nombres en inglés)
         $stats = [
             'total' => $numeraciones->count(),
-            'activas' => $numeraciones->where('active', true)->count(),
+            'activas' => $numeraciones->where('active', true)->count(), // 'active' es correcto
             'disponibles' => $numeraciones->sum(function ($n) {
-                return $n->end_number - $n->current_number + 1;
+                // 'end_number' y 'current_number' son correctos según Tinker
+                return ($n->end_number - $n->current_number) + 1;
             }),
             'consecutivos_vinculados' => $consecutivos->whereNotNull('dian_numeration_id')->count(),
         ];
-
         return view('dian.numeraciones', compact('numeraciones', 'consecutivos', 'stats'));
     }
 

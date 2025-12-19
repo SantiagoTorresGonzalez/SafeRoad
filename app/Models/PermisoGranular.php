@@ -102,8 +102,11 @@ class PermisoGranular extends Model
     /**
      * Scope: permisos por rol
      */
-    public function scopeByRol($query, Role $role)
+    public function scopeByRol($query, ?Role $role)
     {
+        if (!$role) {
+            return $query->whereRaw('1 = 0');
+        }
         return $query->where('role_id', $role->id);
     }
 

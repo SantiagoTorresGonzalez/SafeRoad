@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Role;
 
 class CrearUsuario extends Controller
 {
@@ -22,10 +23,14 @@ class CrearUsuario extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
+        // Buscar el rol por defecto (Auxiliar)
+        $defaultRole = Role::where('name', 'auxiliar')->first();
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role_id' => $defaultRole ? $defaultRole->id : null,
         ]);
 
         Auth::login($user);
