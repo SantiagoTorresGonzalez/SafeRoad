@@ -59,7 +59,7 @@ class DianController extends Controller
             ->map(function ($consecutivo) {
                 return (object)[
                     'id' => $consecutivo->id,
-                    'nombre' => $consecutivo->nombre,
+                    'nombre' => $consecutivo->tipo_documento ?? 'Consecutivo #' . $consecutivo->id,
                     'prefijo' => $consecutivo->prefijo,
                     'dian_numeration_id' => $consecutivo->dian_numeration_id,
                 ];

@@ -199,6 +199,13 @@
         Volver a usuarios
     </a>
 
+    @php
+        $rolesTraducidos = config('permisos_traducidos.roles', []);
+        $permisosTraducidos = config('permisos_traducidos.permisos', []);
+        $rolInfo = $rolesTraducidos[$user->role?->name ?? ''] ?? null;
+        $rolNombreEs = $rolInfo['nombre_es'] ?? ($user->role ? ucfirst(str_replace('_', ' ', $user->role->name)) : 'Sin rol');
+    @endphp
+
     <div class="profile-header-card">
         <div class="profile-avatar">
             {{ substr($user->name, 0, 1) }}
@@ -207,7 +214,7 @@
             <h1>{{ $user->name }}</h1>
             <div class="profile-email">{{ $user->email }}</div>
             <div class="profile-badges">
-                <span class="header-badge role">{{ $user->role->name }}</span>
+                <span class="header-badge role">{{ $rolNombreEs }}</span>
                 <span class="header-badge status">ACTIVO</span>
             </div>
         </div>
@@ -253,7 +260,7 @@
                         <span class="info-label">Rol Asignado</span>
                         <div class="info-value">
                             <span class="status-pill" style="background: #e0e7ff; color: #4338ca;">
-                                {{ strtoupper($user->role->name) }}
+                                {{ strtoupper($rolNombreEs) }}
                             </span>
                         </div>
                     </div>
@@ -263,8 +270,12 @@
                             @if($user->role && $user->role->permissions && $user->role->permissions->count() > 0)
                                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                                     @foreach($user->role->permissions as $perm)
+                                        @php
+                                            $permInfo = $permisosTraducidos[$perm->name] ?? null;
+                                            $permNombreEs = $permInfo['nombre_es'] ?? ucfirst(str_replace('_', ' ', $perm->name));
+                                        @endphp
                                         <span class="status-pill" style="background: #eef2ff; color: #4338ca; font-size: .8rem; padding: 0.25rem 0.5rem; margin: 2px;">
-                                            {{ ucfirst(str_replace('_', ' ', $perm->name)) }}
+                                            {{ $permNombreEs }}
                                         </span>
                                     @endforeach
                                 </div>

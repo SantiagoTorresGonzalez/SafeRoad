@@ -365,6 +365,17 @@
 </style>
 
 <div class="container">
+    @php
+        $rolesTraducidos = config('permisos_traducidos.roles', []);
+        $permisosTraducidos = config('permisos_traducidos.permisos', []);
+        $categoriasTraducidas = config('permisos_traducidos.categorias', []);
+        
+        $rolInfo = $rolesTraducidos[$role->name] ?? null;
+        $rolNombre = $rolInfo['nombre_es'] ?? ucfirst(str_replace('_', ' ', $role->name));
+        $rolDesc = $rolInfo['descripcion'] ?? 'Gestión de permisos y usuarios del sistema';
+        $rolIcono = $rolInfo['icono'] ?? 'badge';
+    @endphp
+    
     <a href="{{ route('admin.roles.index') }}" class="back-link">
         <span class="material-symbols-rounded" style="font-size: 20px;">arrow_back</span>
         Volver a roles
@@ -373,31 +384,11 @@
     <!-- Role Header -->
     <div class="role-header">
         <div class="role-icon-large">
-            <span class="material-symbols-rounded">
-                @switch($role->name)
-                    @case('super_admin')
-                        admin_panel_settings
-                        @break
-                    @case('admin_programa')
-                        manage_accounts
-                        @break
-                    @case('administrador')
-                        admin_panel_settings
-                        @break
-                    @case('auxiliar')
-                        support_agent
-                        @break
-                    @case('tesoreria')
-                        account_balance_wallet
-                        @break
-                    @default
-                        badge
-                @endswitch
-            </span>
+            <span class="material-symbols-rounded">{{ $rolIcono }}</span>
         </div>
         <div class="role-header-content">
-            <h1>{{ ucfirst(str_replace('_', ' ', $role->name)) }}</h1>
-            <p>Gestión de permisos y usuarios del sistema</p>
+            <h1>{{ $rolNombre }}</h1>
+            <p>{{ $rolDesc }}</p>
         </div>
     </div>
 
@@ -412,7 +403,7 @@
 
                 <div class="info-group">
                     <label class="info-label">Nombre del Rol</label>
-                    <div class="info-value">{{ $role->name }}</div>
+                    <div class="info-value">{{ $rolNombre }}</div>
                 </div>
 
                 <div class="stat-grid">
@@ -465,62 +456,42 @@
 
                 @if($role->permissions && $role->permissions->count() > 0)
                     @php
-                        $permissionCategories = [
-                            'Cuentas de Cobro' => ['create_cuenta_cobro', 'view_cuenta_cobro', 'view_own_cuenta_cobro', 'view_all_cuenta_cobro', 'edit_own_cuenta_cobro', 'review_cuenta_cobro', 'approve_cuenta_cobro', 'reject_cuenta_cobro', 'final_approval'],
-                            'Documentos' => ['upload_documents', 'view_documents'],
-                            'Contratos' => ['view_contract_info', 'manage_contracts', 'contract_validation'],
-                            'Pagos' => ['authorize_payment', 'process_payment', 'generate_checks', 'bank_transfers', 'payment_confirmation', 'generate_payment_orders'],
-                            'Presupuesto' => ['view_budget', 'manage_budget'],
-                            'Reportes' => ['view_reports', 'financial_reports', 'view_financial_reports', 'contract_reports'],
-                            'Administración' => ['manage_users', 'manage_contractors', 'contractor_registration', 'system_admin'],
-                            'Otros' => ['add_comments', 'request_corrections', 'override_decisions']
-                        ];
+                        // Agrupar permisos por categoría usando la configuración
+                        $permisosPorCategoria = [];
+                        foreach ($role->permissions as $permission) {
+                            $permInfo = $permisosTraducidos[$permission->name] ?? null;
+                            $categoria = $permInfo['categoria'] ?? 'otros';
+                            if (!isset($permisosPorCategoria[$categoria])) {
+                                $permisosPorCategoria[$categoria] = [];
+                            }
+                            $permisosPorCategoria[$categoria][] = [
+                                'name' => $permission->name,
+                                'nombre_es' => $permInfo['nombre_es'] ?? ucfirst(str_replace('_', ' ', $permission->name)),
+                                'icono' => $permInfo['icono'] ?? 'check_circle'
+                            ];
+                        }
                     @endphp
 
-                    @foreach($permissionCategories as $category => $categoryPerms)
+                    @foreach($permisosPorCategoria as $catKey => $permisos)
                         @php
-                            $categoryPermissions = array_intersect($role->permissions->pluck('name')->toArray(), $categoryPerms);
+                            $catInfo = $categoriasTraducidas[$catKey] ?? null;
+                            $catNombre = $catInfo['nombre_es'] ?? ucfirst(str_replace('_', ' ', $catKey));
+                            $catIcono = $catInfo['icono'] ?? 'folder';
                         @endphp
-                        @if(count($categoryPermissions) > 0)
-                            <div class="permissions-category">
-                                <div class="category-title">
-                                    @switch($category)
-                                        @case('Cuentas de Cobro')
-                                            <span class="material-symbols-rounded">receipt_long</span>
-                                            @break
-                                        @case('Documentos')
-                                            <span class="material-symbols-rounded">description</span>
-                                            @break
-                                        @case('Contratos')
-                                            <span class="material-symbols-rounded">handshake</span>
-                                            @break
-                                        @case('Pagos')
-                                            <span class="material-symbols-rounded">payment</span>
-                                            @break
-                                        @case('Presupuesto')
-                                            <span class="material-symbols-rounded">trending_up</span>
-                                            @break
-                                        @case('Reportes')
-                                            <span class="material-symbols-rounded">bar_chart</span>
-                                            @break
-                                        @case('Administración')
-                                            <span class="material-symbols-rounded">admin_panel_settings</span>
-                                            @break
-                                        @default
-                                            <span class="material-symbols-rounded">more_horiz</span>
-                                    @endswitch
-                                    {{ $category }}
-                                </div>
-                                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                    @foreach($categoryPermissions as $permission)
-                                        <div class="permission-badge">
-                                            <span class="material-symbols-rounded">check_circle</span>
-                                            {{ ucfirst(str_replace('_', ' ', $permission)) }}
-                                        </div>
-                                    @endforeach
-                                </div>
+                        <div class="permissions-category">
+                            <div class="category-title">
+                                <span class="material-symbols-rounded">{{ $catIcono }}</span>
+                                {{ $catNombre }}
                             </div>
-                        @endif
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                @foreach($permisos as $permiso)
+                                    <div class="permission-badge">
+                                        <span class="material-symbols-rounded">{{ $permiso['icono'] }}</span>
+                                        {{ $permiso['nombre_es'] }}
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
                     @endforeach
                 @else
                     <div class="empty-state">

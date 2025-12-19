@@ -256,11 +256,18 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Rol del Usuario</label>
+                    @php
+                        $rolesTraducidos = config('permisos_traducidos.roles', []);
+                    @endphp
                     <select name="role_id" class="form-control" required>
                         <option value="">Seleccionar rol...</option>
                         @foreach($roles as $role)
+                            @php
+                                $rolInfo = $rolesTraducidos[$role->name] ?? null;
+                                $rolNombre = $rolInfo['nombre_es'] ?? ucfirst(str_replace('_', ' ', $role->name));
+                            @endphp
                             <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
-                                {{ ucfirst($role->name) }}
+                                {{ $rolNombre }}
                             </option>
                         @endforeach
                     </select>

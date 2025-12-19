@@ -362,8 +362,17 @@
 
     <!-- Roles Grid -->
     <div class="roles-grid">
+        @php
+            $rolesTraducidos = config('permisos_traducidos.roles', []);
+        @endphp
         @foreach($roles as $role)
             @php
+                $rolInfo = $rolesTraducidos[$role->name] ?? null;
+                $rolNombre = $rolInfo['nombre_es'] ?? ucfirst(str_replace('_', ' ', $role->name));
+                $rolDesc = $rolInfo['descripcion'] ?? $role->description ?? 'Sin descripción disponible para este rol.';
+                $rolIcono = $rolInfo['icono'] ?? 'badge';
+                $rolColor = $rolInfo['color'] ?? '#64748b';
+                
                 $gradientClass = match($role->name) {
                     'super_admin' => 'bg-gradient-purple',
                     'admin_programa' => 'bg-gradient-blue',
@@ -372,24 +381,15 @@
                     'tesoreria' => 'bg-gradient-teal',
                     default => 'bg-gradient-slate'
                 };
-                
-                $icon = match($role->name) {
-                    'super_admin' => 'admin_panel_settings',
-                    'admin_programa' => 'manage_accounts',
-                    'administrador' => 'supervisor_account',
-                    'auxiliar' => 'support_agent',
-                    'tesoreria' => 'account_balance',
-                    default => 'badge'
-                };
             @endphp
             
             <div class="role-card">
                 <div class="role-header">
                     <div>
-                        <div class="role-icon-wrapper {{ $gradientClass }}">
-                            <span class="material-symbols-rounded">{{ $icon }}</span>
+                        <div class="role-icon-wrapper" style="background: {{ $rolColor }};">
+                            <span class="material-symbols-rounded">{{ $rolIcono }}</span>
                         </div>
-                        <h3 class="role-name">{{ ucfirst($role->name) }}</h3>
+                        <h3 class="role-name">{{ $rolNombre }}</h3>
                         <div class="role-meta">
                             <span class="material-symbols-rounded" style="font-size: 1rem;">group</span>
                             {{ $role->users->count() }} usuarios
@@ -410,27 +410,39 @@
                 
                 <div class="role-body">
                     <p style="color: var(--slate-500); font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5;">
-                        {{ $role->description ?? 'Sin descripción disponible para este rol.' }}
+                        {{ $rolDesc }}
                     </p>
                     
                     <div class="permission-preview">
-                        <span style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--slate-400); margin-bottom: 0.5rem; text-transform: uppercase;">Acceso Rápido</span>
-                        @if($role->name == 'administrador' || $role->name == 'admin_programa')
-                            <span class="permission-tag">Acceso Total</span>
-                            <span class="permission-tag">Gestión de Usuarios</span>
+                        <span style="display: block; font-size: 0.75rem; font-weight: 600; color: var(--slate-400); margin-bottom: 0.5rem; text-transform: uppercase;">Permisos del Rol</span>
+                        @php
+                            $permCount = $role->permissions?->count() ?? 0;
+                        @endphp
+                        @if($permCount > 0)
+                            @foreach($role->permissions->take(3) as $perm)
+                                @php
+                                    $permInfo = config('permisos_traducidos.permisos.' . $perm->name, []);
+                                    $permNombre = $permInfo['nombre_es'] ?? ucfirst(str_replace('_', ' ', $perm->name));
+                                @endphp
+                                <span class="permission-tag">{{ $permNombre }}</span>
+                            @endforeach
+                            @if($permCount > 3)
+                                <span class="permission-tag" style="background: var(--primary-blue); color: white;">+{{ $permCount - 3 }} más</span>
+                            @endif
                         @else
-                            <span class="permission-tag">Ver Documentos</span>
-                            <span class="permission-tag">Crear Cuentas</span>
+                            <span class="permission-tag" style="background: #fef3c7; color: #92400e;">Sin permisos asignados</span>
                         @endif
                     </div>
                 </div>
 
                 <div class="role-footer">
                     <a href="{{ route('admin.roles.edit', $role) }}" class="btn btn-outline" style="flex: 1;">
+                        <span class="material-symbols-rounded" style="font-size: 18px;">edit</span>
                         Editar
                     </a>
                     <a href="{{ route('admin.roles.show', $role) }}" class="btn btn-primary" style="flex: 1;">
-                        Detalles
+                        <span class="material-symbols-rounded" style="font-size: 18px;">visibility</span>
+                        Ver
                     </a>
                 </div>
             </div>
