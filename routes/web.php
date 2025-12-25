@@ -277,7 +277,31 @@ Route::middleware(['auth'])->group(function () {
         Route::post('{id}/desarchivar', [CuentaCobroController::class, 'desarchivar'])
             ->middleware([\App\Http\Middleware\CheckRoleOrPermission::class . ':archivar,edit_own_cuenta_cobro'])
             ->name('desarchivar');
+        
+        // ========================================
+        // DEVOLUCIÓN Y ANULACIÓN DE CUENTAS
+        // ========================================
+        // Devolver cuenta (admin_programa, tesoreria, administrador)
+        Route::post('{id}/devolver-general', [CuentaCobroController::class, 'devolverGeneral'])
+            ->middleware([\App\Http\Middleware\CheckRoleOrPermission::class . ':admin_programa,tesoreria,administrador,super_admin,request_corrections'])
+            ->name('devolver_general');
+        
+        // Anular cuenta (solo admin_programa o super_admin)
+        Route::post('{id}/anular', [CuentaCobroController::class, 'anular'])
+            ->middleware([\App\Http\Middleware\CheckRoleOrPermission::class . ':admin_programa,super_admin'])
+            ->name('anular');
+        
+        // Historial completo de una cuenta
+        Route::get('{id}/historial', [CuentaCobroController::class, 'historialCompleto'])
+            ->name('historial');
     });
+
+    // ========================================
+    // REPORTE DE DEVOLUCIONES Y ANULACIONES
+    // ========================================
+    Route::middleware([\App\Http\Middleware\CheckRoleOrPermission::class . ':admin_programa,tesoreria,super_admin'])
+        ->get('reportes/devoluciones', [CuentaCobroController::class, 'reporteDevoluciones'])
+        ->name('reportes.devoluciones');
 
     // ========================================
     // APROBACIONES (Administrador, Tesorería, Admin Programa)

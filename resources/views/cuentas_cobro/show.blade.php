@@ -553,6 +553,10 @@
             <div class="wix-card">
                 <h3 class="wix-card-title">Acciones</h3>
 
+                <a href="{{ route('cuentas_cobro.historial', $cuenta->id) }}" class="wix-btn wix-btn-secondary" style="margin-bottom: 12px; width: 100%; justify-content: center;">
+                    <span class="material-symbols-rounded">history</span> Ver Historial Completo
+                </a>
+
                 <a href="{{ route('cuentas_cobro.seguimiento', $cuenta->id) }}" class="wix-btn wix-btn-secondary" style="margin-bottom: 12px; width: 100%; justify-content: center;">
                     <span class="material-symbols-rounded">timeline</span> Ver Seguimiento Detallado
                 </a>
@@ -576,6 +580,21 @@
                     <button onclick="document.getElementById('rejectModal').style.display='flex'" class="wix-btn wix-btn-danger">
                         <span class="material-symbols-rounded">cancel</span> Rechazar
                     </button>
+                @endif
+
+                {{-- Botones de Devolver y Anular (solo para roles autorizados) --}}
+                @if($cuenta->estado_aprobacion !== 'anulado' && (auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin_programa') || auth()->user()->hasRole('administrador') || auth()->user()->hasRole('tesoreria')))
+                    <hr style="margin: 16px 0; border: none; border-top: 1px solid #e5e7eb;">
+                    
+                    <button type="button" onclick="document.getElementById('devolverGeneralModal').style.display='flex'" class="wix-btn" style="background: #FEF3C7; color: #92400E; margin-bottom: 8px;">
+                        <span class="material-symbols-rounded">undo</span> Devolver para Ajuste
+                    </button>
+                    
+                    @if(auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('admin_programa'))
+                    <button type="button" onclick="document.getElementById('anularModal').style.display='flex'" class="wix-btn" style="background: #FEE2E2; color: #991B1B;">
+                        <span class="material-symbols-rounded">block</span> Anular Cuenta
+                    </button>
+                    @endif
                 @endif
 
                 <a href="{{ route('cuentas_cobro.pdf', $cuenta->id) }}" target="_blank" class="wix-btn wix-btn-secondary">
@@ -692,6 +711,90 @@
             <div style="display:flex; gap:12px; justify-content:flex-end;">
                 <button type="button" onclick="document.getElementById('rejectModal').style.display='none'" class="wix-btn wix-btn-secondary" style="width:auto; margin:0;">Cancelar</button>
                 <button type="submit" class="wix-btn wix-btn-danger" style="width:auto; margin:0;">Confirmar Rechazo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Devolver General -->
+<div id="devolverGeneralModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:12px; padding:32px; width:90%; max-width:500px;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+            <div style="width:48px; height:48px; background:#FEF3C7; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#92400E;">
+                <span class="material-symbols-rounded" style="font-size:24px;">undo</span>
+            </div>
+            <div>
+                <h3 style="margin:0; font-size:18px; color:#1a1a2e;">Devolver Cuenta para Ajuste</h3>
+                <p style="margin:4px 0 0; font-size:13px; color:#6b7280;">La cuenta será devuelta para modificaciones</p>
+            </div>
+        </div>
+        
+        <form action="{{ route('cuentas_cobro.devolver_general', $cuenta->id) }}" method="POST">
+            @csrf
+            
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-weight:600; margin-bottom:6px; color:#374151;">Devolver a</label>
+                <select name="devolver_a" required style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;">
+                    <option value="auxiliar">Auxiliar (creador original)</option>
+                    <option value="administrador">Administrador</option>
+                    <option value="tesoreria">Tesorería</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-weight:600; margin-bottom:6px; color:#374151;">Motivo de la devolución *</label>
+                <textarea name="motivo" rows="4" placeholder="Explique por qué se devuelve esta cuenta (ajuste de plazo, corrección de monto, etc.)..." required minlength="5" style="width:100%; padding:12px; border:1px solid #d1d5db; border-radius:8px; font-family:inherit; font-size:14px;"></textarea>
+            </div>
+            
+            <div style="display:flex; gap:12px; justify-content:flex-end;">
+                <button type="button" onclick="document.getElementById('devolverGeneralModal').style.display='none'" class="wix-btn wix-btn-secondary" style="width:auto; margin:0;">Cancelar</button>
+                <button type="submit" class="wix-btn" style="width:auto; margin:0; background:#FF9500; color:white;">
+                    <span class="material-symbols-rounded">undo</span> Devolver Cuenta
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Anular Cuenta -->
+<div id="anularModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:12px; padding:32px; width:90%; max-width:500px;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+            <div style="width:48px; height:48px; background:#FEE2E2; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#991B1B;">
+                <span class="material-symbols-rounded" style="font-size:24px;">block</span>
+            </div>
+            <div>
+                <h3 style="margin:0; font-size:18px; color:#1a1a2e;">Anular Cuenta de Cobro</h3>
+                <p style="margin:4px 0 0; font-size:13px; color:#991B1B;">⚠️ Esta acción no se puede deshacer</p>
+            </div>
+        </div>
+        
+        <div style="background:#FEE2E2; padding:12px; border-radius:8px; margin-bottom:16px;">
+            <p style="margin:0; font-size:13px; color:#991B1B;">
+                <strong>Atención:</strong> Anular una cuenta la marcará permanentemente como inválida y será archivada. Use esta opción solo cuando la cuenta tenga errores irreparables o deba ser reemplazada por una nueva.
+            </p>
+        </div>
+        
+        <form action="{{ route('cuentas_cobro.anular', $cuenta->id) }}" method="POST">
+            @csrf
+            
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-weight:600; margin-bottom:6px; color:#374151;">Motivo de la anulación *</label>
+                <textarea name="motivo_anulacion" rows="4" placeholder="Explique detalladamente por qué se anula esta cuenta..." required minlength="10" style="width:100%; padding:12px; border:1px solid #d1d5db; border-radius:8px; font-family:inherit; font-size:14px;"></textarea>
+            </div>
+            
+            <div style="margin-bottom:16px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" required style="width:18px; height:18px;">
+                    <span style="font-size:14px; color:#374151;">Confirmo que deseo anular esta cuenta de cobro</span>
+                </label>
+            </div>
+            
+            <div style="display:flex; gap:12px; justify-content:flex-end;">
+                <button type="button" onclick="document.getElementById('anularModal').style.display='none'" class="wix-btn wix-btn-secondary" style="width:auto; margin:0;">Cancelar</button>
+                <button type="submit" class="wix-btn wix-btn-danger" style="width:auto; margin:0;">
+                    <span class="material-symbols-rounded">block</span> Anular Cuenta
+                </button>
             </div>
         </form>
     </div>

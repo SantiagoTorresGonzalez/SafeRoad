@@ -1742,4 +1742,223 @@ class CuentaCobroController extends Controller
             'Cache-Control' => 'max-age=0',
         ]);
     }
+
+    /**
+     * Devolver cuenta de cobro a cualquier etapa (Admin Programa / Tesorería)
+     * Permite devolver una cuenta incluso después de aprobada para ajustar plazos, montos, etc.
+     */
+    public function devolverGeneral(Request $request, $id)
+    {
+        $cuenta = CuentaCobro::findOrFail($id);
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect('/login');
+        }
+
+        $request->validate([
+            'motivo' => 'required|string|min:5|max:1000',
+            'devolver_a' => 'nullable|in:auxiliar,administrador,tesoreria',
+        ]);
+
+        // Verificar permisos: solo admin_programa, super_admin o tesoreria pueden devolver
+        if (!($user->hasRole('super_admin')
+            || $user->hasRole('admin_programa')
+            || $user->hasRole('tesoreria')
+            || $user->hasRole('administrador')
+            || $user->hasPermission('request_corrections')
+        )) {
+            return back()->with('error', 'No tienes permisos para devolver esta cuenta.');
+        }
+
+        // No permitir devolver cuentas ya anuladas o pagadas completamente
+        if ($cuenta->estado_aprobacion === 'anulado') {
+            return back()->with('error', 'No se puede devolver una cuenta anulada.');
+        }
+
+        if ($cuenta->estado_pago === 'paid' && $cuenta->estado_aprobacion === 'pagado') {
+            return back()->with('warning', 'Esta cuenta ya fue pagada. Si necesita ajustes, considere anularla y crear una nueva.');
+        }
+
+        $estadoAnterior = $cuenta->estado_aprobacion;
+        $etapaAnterior = $cuenta->etapa_aprobacion;
+        $devolverA = $request->input('devolver_a', 'auxiliar');
+
+        // Actualizar estado
+        $cuenta->estado_aprobacion = 'en_correccion';
+        $cuenta->etapa_aprobacion = $devolverA;
+        $cuenta->motivo_devolucion = $request->input('motivo');
+        $cuenta->fecha_ultima_modificacion = now();
+        $cuenta->modificado_por = $user->id;
+        $cuenta->save();
+
+        // Registrar en historial
+        $cuenta->registrarHistorial(
+            $user->id,
+            'devuelto_general',
+            $estadoAnterior,
+            'en_correccion',
+            "Devuelto a {$devolverA} por {$user->name}. Motivo: " . $request->input('motivo')
+        );
+
+        // Notificar al destinatario
+        $notificarUsuarios = [];
+        
+        if ($devolverA === 'auxiliar' && $cuenta->user_id) {
+            $notificarUsuarios[] = $cuenta->user_id;
+        } else {
+            // Notificar a usuarios del rol correspondiente
+            $usuariosRol = User::whereHas('role', function($q) use ($devolverA) {
+                $q->where('name', $devolverA);
+            })->pluck('id')->toArray();
+            $notificarUsuarios = $usuariosRol;
+        }
+
+        foreach ($notificarUsuarios as $userId) {
+            Notificacion::create([
+                'user_id' => $userId,
+                'tipo' => 'cuenta_cobro',
+                'titulo' => 'Cuenta devuelta para ajuste',
+                'mensaje' => "La cuenta #{$cuenta->numero} ha sido devuelta. Motivo: " . $request->input('motivo'),
+                'cuenta_cobro_id' => $cuenta->id,
+            ]);
+        }
+
+        return back()->with('success', "Cuenta devuelta a {$devolverA} correctamente.");
+    }
+
+    /**
+     * Anular cuenta de cobro (no elimina, marca como anulada)
+     */
+    public function anular(Request $request, $id)
+    {
+        $cuenta = CuentaCobro::findOrFail($id);
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect('/login');
+        }
+
+        $request->validate([
+            'motivo_anulacion' => 'required|string|min:10|max:1000',
+        ]);
+
+        // Solo admin_programa o super_admin pueden anular
+        if (!($user->hasRole('super_admin') || $user->hasRole('admin_programa'))) {
+            return back()->with('error', 'Solo el administrador del programa puede anular cuentas de cobro.');
+        }
+
+        if ($cuenta->estado_aprobacion === 'anulado') {
+            return back()->with('error', 'Esta cuenta ya está anulada.');
+        }
+
+        $estadoAnterior = $cuenta->estado_aprobacion;
+
+        // Marcar como anulada
+        $cuenta->estado_aprobacion = 'anulado';
+        $cuenta->motivo_rechazo = 'ANULADO: ' . $request->input('motivo_anulacion');
+        $cuenta->fecha_ultima_modificacion = now();
+        $cuenta->modificado_por = $user->id;
+        $cuenta->archived_at = now(); // Archivar automáticamente
+        $cuenta->save();
+
+        // Registrar en historial
+        $cuenta->registrarHistorial(
+            $user->id,
+            'anulado',
+            $estadoAnterior,
+            'anulado',
+            "Cuenta anulada por {$user->name}. Motivo: " . $request->input('motivo_anulacion')
+        );
+
+        // Notificar al creador
+        if ($cuenta->user_id) {
+            Notificacion::create([
+                'user_id' => $cuenta->user_id,
+                'tipo' => 'cuenta_cobro',
+                'titulo' => 'Cuenta de cobro anulada',
+                'mensaje' => "La cuenta #{$cuenta->numero} ha sido anulada. Motivo: " . $request->input('motivo_anulacion'),
+                'cuenta_cobro_id' => $cuenta->id,
+            ]);
+        }
+
+        return redirect()->route('cuentas_cobro.index')->with('success', 'Cuenta de cobro anulada correctamente.');
+    }
+
+    /**
+     * Mostrar historial completo de una cuenta
+     */
+    public function historialCompleto($id)
+    {
+        $cuenta = CuentaCobro::with([
+            'historial.user',
+            'interacciones.user',
+            'user',
+            'items',
+            'soportes',
+            'documentos'
+        ])->findOrFail($id);
+
+        $user = Auth::user();
+
+        // Verificar permisos de visualización
+        $canView = $cuenta->user_id === $user->id
+            || $user->hasRole('super_admin')
+            || $user->hasRole('admin_programa')
+            || $user->hasRole('administrador')
+            || $user->hasRole('tesoreria')
+            || $user->hasPermission('view_cuenta_cobro');
+
+        if (!$canView) {
+            return back()->with('error', 'No tienes permiso para ver el historial de esta cuenta.');
+        }
+
+        return view('cuentas_cobro.historial', compact('cuenta'));
+    }
+
+    /**
+     * Obtener historial de todas las devoluciones del sistema (para reportes)
+     */
+    public function reporteDevoluciones(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!($user->hasRole('super_admin') || $user->hasRole('admin_programa') || $user->hasRole('tesoreria'))) {
+            return back()->with('error', 'No tienes permisos para ver este reporte.');
+        }
+
+        $query = \App\Models\CuentaCobroHistorial::with(['cuenta', 'user'])
+            ->whereIn('accion', ['devuelto', 'devuelto_general', 'rechazado', 'anulado'])
+            ->orderByDesc('created_at');
+
+        // Filtros
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('created_at', '>=', $request->fecha_desde);
+        }
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('created_at', '<=', $request->fecha_hasta);
+        }
+        if ($request->filled('usuario_id')) {
+            $query->where('user_id', $request->usuario_id);
+        }
+        if ($request->filled('accion')) {
+            $query->where('accion', $request->accion);
+        }
+
+        $devoluciones = $query->paginate(50);
+
+        // Estadísticas
+        $stats = [
+            'total_devoluciones' => \App\Models\CuentaCobroHistorial::whereIn('accion', ['devuelto', 'devuelto_general'])->count(),
+            'total_rechazos' => \App\Models\CuentaCobroHistorial::where('accion', 'rechazado')->count(),
+            'total_anulaciones' => \App\Models\CuentaCobroHistorial::where('accion', 'anulado')->count(),
+        ];
+
+        $usuarios = User::whereHas('role', function($q) {
+            $q->whereIn('name', ['admin_programa', 'administrador', 'tesoreria']);
+        })->get();
+
+        return view('cuentas_cobro.reporte_devoluciones', compact('devoluciones', 'stats', 'usuarios'));
+    }
 }
+
