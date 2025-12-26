@@ -69,6 +69,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notificaciones/marcar-todas-leidas', [NotificacionController::class, 'marcarTodasLeidas'])->name('notificaciones.marcarTodasLeidas');
     Route::get('/notificaciones/preferencias', [NotificacionController::class, 'preferencias'])->name('notificaciones.preferencias');
     Route::post('/notificaciones/preferencias', [NotificacionController::class, 'guardarPreferencias'])->name('notificaciones.guardarPreferencias');
+    
 
     // ========================================
     // DOCUMENTOS (gestión de archivos)
