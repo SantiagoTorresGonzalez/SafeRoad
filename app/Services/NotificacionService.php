@@ -16,20 +16,12 @@ class NotificacionService
     {
         $query = Notificacion::where('user_id', $userId);
 
-        return [
+        $stats = [
             'total' => (clone $query)->count(),
             'no_leidas' => (clone $query)->where('leida', false)->count(),
             'leidas' => (clone $query)->where('leida', true)->count(),
-            'por_tipo' => (clone $query)
-                ->select('tipo', DB::raw('count(*) as cantidad'))
-                ->groupBy('tipo')
-                ->pluck('cantidad', 'tipo')
-                ->toArray(),
-            'por_prioridad' => (clone $query)
-                ->select('prioridad', DB::raw('count(*) as cantidad'))
-                ->groupBy('prioridad')
-                ->pluck('cantidad', 'prioridad')
-                ->toArray(),
+            'por_tipo' => [],
+            'por_prioridad' => [],
             'ultimas_24h' => (clone $query)
                 ->where('created_at', '>=', Carbon::now()->subDay())
                 ->count(),
@@ -37,6 +29,30 @@ class NotificacionService
                 ->where('created_at', '>=', Carbon::now()->subWeek())
                 ->count(),
         ];
+
+        // Intentar obtener estadísticas por tipo si la columna existe
+        try {
+            $stats['por_tipo'] = (clone $query)
+                ->select('tipo', DB::raw('count(*) as cantidad'))
+                ->groupBy('tipo')
+                ->pluck('cantidad', 'tipo')
+                ->toArray();
+        } catch (\Exception $e) {
+            $stats['por_tipo'] = [];
+        }
+
+        // Intentar obtener estadísticas por prioridad si la columna existe
+        try {
+            $stats['por_prioridad'] = (clone $query)
+                ->select('prioridad', DB::raw('count(*) as cantidad'))
+                ->groupBy('prioridad')
+                ->pluck('cantidad', 'prioridad')
+                ->toArray();
+        } catch (\Exception $e) {
+            $stats['por_prioridad'] = [];
+        }
+
+        return $stats;
     }
 
     /**
