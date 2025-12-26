@@ -1559,8 +1559,8 @@ class CuentaCobroController extends Controller
         $stats = [
             'total_cuentas' => CuentaCobro::count(),
             'monto_total' => CuentaCobro::sum('valor_total'),
-            'pendientes' => CuentaCobro::where('estado', 'enviado')->count(),
-            'pagadas' => CuentaCobro::where('estado', 'pagado')->count(),
+            'pendientes' => CuentaCobro::where('estado_pago', 'enviado')->count(),
+            'pagadas' => CuentaCobro::where('estado_pago', 'pagado')->count(),
         ];
 
         $cuentas = $query->paginate(50)->withQueryString();
