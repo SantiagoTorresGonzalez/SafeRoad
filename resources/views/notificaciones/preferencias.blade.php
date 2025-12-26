@@ -9,17 +9,20 @@
                     <h5 class="mb-0">Mis Preferencias de Notificación</h5>
                 </div>
                 <div class="card-body">
+                    {{-- Verifica que el nombre de la ruta sea el correcto en tu web.php --}}
                     <form action="{{ route('notificaciones.guardarPreferencias') }}" method="POST">
                         @csrf
                         <div class="mb-4">
                             <h6>Canales de Notificación</h6>
                             <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" name="email_enabled" id="email" {{ $preferencias->email_enabled ? 'checked' : '' }}>
+                                {{-- Cambio de email_enabled a email_habilitado --}}
+                                <input class="form-check-input" type="checkbox" name="email_habilitado" id="email" {{ $preferencias->email_habilitado ? 'checked' : '' }}>
                                 <label class="form-check-label" for="email">Recibir por Correo Electrónico</label>
                             </div>
                             <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" name="push_enabled" id="push" {{ $preferencias->push_enabled ? 'checked' : '' }}>
-                                <label class="form-check-label" for="push">Notificaciones en el Navegador</label>
+                                {{-- Cambio de push_enabled a app_habilitado --}}
+                                <input class="form-check-input" type="checkbox" name="app_habilitado" id="push" {{ $preferencias->app_habilitado ? 'checked' : '' }}>
+                                <label class="form-check-label" for="push">Notificaciones en la Aplicación (Push)</label>
                             </div>
                         </div>
 

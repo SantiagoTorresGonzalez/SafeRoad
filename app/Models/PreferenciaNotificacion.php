@@ -6,28 +6,26 @@ use Illuminate\Database\Eloquent\Model;
 
 class PreferenciaNotificacion extends Model
 {
-    // Nombre de la tabla en la DB
     protected $table = 'preferencia_notificaciones';
 
     protected $fillable = [
         'user_id',
-        'email_enabled',
-        'sms_enabled',
-        'push_enabled',
-        'frecuencia_resumen'
+        'email_habilitado',
+        'app_habilitado',
+        'frecuencia_resumen',
+        'hora_resumen',
+        'no_molestar_activo'
     ];
 
-    /**
-     * Lógica para obtener o crear las preferencias del usuario
-     */
     public static function obtenerOCrear($userId)
     {
         return self::firstOrCreate(
             ['user_id' => $userId],
             [
-                'email_enabled' => true,
-                'push_enabled' => true,
-                'frecuencia_resumen' => 'inmediato'
+                'email_habilitado' => true,
+                'app_habilitado' => true,
+                'frecuencia_resumen' => 'inmediato',
+                'no_molestar_activo' => false
             ]
         );
     }
