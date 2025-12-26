@@ -413,9 +413,15 @@
                 <h3 class="sidebar-title">Análisis</h3>
                 <ul class="sidebar-menu">
                     <li class="sidebar-item">
-                        <a href="{{ route('reportes.index') }}" class="sidebar-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}">
+                        <a href="{{ route('reportes.index') }}" class="sidebar-link {{ request()->routeIs('reportes.index') ? 'active' : '' }}">
                             <span class="material-symbols-rounded">pie_chart</span>
                             Reportes
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('reportes.devoluciones') }}" class="sidebar-link {{ request()->routeIs('reportes.devoluciones') ? 'active' : '' }}">
+                            <span class="material-symbols-rounded">history</span>
+                            Devoluciones
                         </a>
                     </li>
                 </ul>

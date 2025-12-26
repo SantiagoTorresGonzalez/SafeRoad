@@ -48,7 +48,12 @@ class CuentaCobroHistorial extends Model
             'pagado' => 'paid',
             'pago_rechazado' => 'cancel',
             'devuelto' => 'undo',
+            'devuelto_general' => 'replay',
             'reenviado' => 'redo',
+            'anulado' => 'block',
+            'archivado' => 'archive',
+            'desarchivado' => 'unarchive',
+            'editado' => 'edit',
             default => 'info',
         };
     }
@@ -64,8 +69,34 @@ class CuentaCobroHistorial extends Model
             'pagado' => '#34C759',
             'pago_rechazado' => '#FF3B30',
             'devuelto' => '#FF9500',
+            'devuelto_general' => '#FF9500',
             'reenviado' => '#0A84FF',
+            'anulado' => '#8E8E93',
+            'archivado' => '#8E8E93',
+            'desarchivado' => '#0A84FF',
+            'editado' => '#5856D6',
             default => '#8E8E93',
+        };
+    }
+
+    public function getEtiqueta(): string
+    {
+        return match ($this->accion) {
+            'creado' => 'Creada',
+            'revisado' => 'En Revisión',
+            'aprobado' => 'Aprobada',
+            'rechazado' => 'Rechazada',
+            'enviado_cliente' => 'Enviada al Cliente',
+            'pagado' => 'Pagada',
+            'pago_rechazado' => 'Pago Rechazado',
+            'devuelto' => 'Devuelta',
+            'devuelto_general' => 'Devuelta para Ajuste',
+            'reenviado' => 'Reenviada',
+            'anulado' => 'Anulada',
+            'archivado' => 'Archivada',
+            'desarchivado' => 'Desarchivada',
+            'editado' => 'Editada',
+            default => ucfirst($this->accion),
         };
     }
 }
