@@ -348,6 +348,10 @@
                     </button>
                 </form>
             @endif
+            <a href="{{ route('notificaciones.preferencias') }}" class="btn btn-white">
+                <span class="material-symbols-rounded">settings</span>
+                Preferencias
+            </a>
             <a href="{{ route('dashboard') }}" class="btn btn-white">
                 <span class="material-symbols-rounded">arrow_back</span>
                 Volver
@@ -356,6 +360,63 @@
     </div>
 
     <!-- Stats Banner -->
+    @if(isset($estadisticas))
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--primary) !important;">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-center">
+                        <span class="material-symbols-rounded text-primary me-2">notifications</span>
+                        <div>
+                            <div class="h4 mb-0">{{ $estadisticas['total'] }}</div>
+                            <small class="text-muted">Total</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--warning) !important;">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-center">
+                        <span class="material-symbols-rounded text-warning me-2">mark_email_unread</span>
+                        <div>
+                            <div class="h4 mb-0">{{ $estadisticas['no_leidas'] }}</div>
+                            <small class="text-muted">Sin leer</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--success) !important;">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-center">
+                        <span class="material-symbols-rounded text-success me-2">today</span>
+                        <div>
+                            <div class="h4 mb-0">{{ $estadisticas['hoy'] }}</div>
+                            <small class="text-muted">Hoy</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--danger) !important;">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-center">
+                        <span class="material-symbols-rounded text-danger me-2">priority_high</span>
+                        <div>
+                            <div class="h4 mb-0">{{ $estadisticas['accion_pendiente'] }}</div>
+                            <small class="text-muted">Requiere acción</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+    
     @if($noLeidas > 0)
         <div class="stats-banner">
             <div class="stats-icon">

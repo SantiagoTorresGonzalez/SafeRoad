@@ -86,6 +86,16 @@ class CuentaCobro extends Model
         'fecha_vencimiento_factura',
         'observaciones_internas', 'justificacion_rechazo', 'justificacion_devolucion',
         'fecha_ultima_modificacion', 'modificado_por',
+        
+        // Tracking de envío (como remisiones)
+        'codigo_tracking', 'estado_envio', 'metodo_envio', 'direccion_entrega',
+        'contacto_entrega', 'fecha_envio_real', 'fecha_entrega_estimada', 'fecha_entrega_real',
+        'recibido_por', 'cargo_receptor', 'firma_recepcion_url', 'fecha_confirmacion_recepcion',
+        'observaciones_recepcion', 'prioridad', 'requiere_confirmacion', 'dias_para_pago',
+        'recordatorios_enviados', 'ultimo_recordatorio_at',
+        
+        // Lotes
+        'lote_actual_id',
     ];
 
     /**
@@ -156,6 +166,16 @@ class CuentaCobro extends Model
         'user_id' => 'integer',
         'aprobado_por_id' => 'integer',
         'modificado_por' => 'integer',
+        
+        // Tracking
+        'fecha_envio_real' => 'datetime',
+        'fecha_entrega_estimada' => 'datetime',
+        'fecha_entrega_real' => 'datetime',
+        'fecha_confirmacion_recepcion' => 'datetime',
+        'ultimo_recordatorio_at' => 'datetime',
+        'requiere_confirmacion' => 'boolean',
+        'dias_para_pago' => 'integer',
+        'recordatorios_enviados' => 'integer',
     ];
 
     /**
@@ -220,6 +240,32 @@ class CuentaCobro extends Model
     public function documentos()
     {
         return $this->hasMany(Documento::class, 'cuenta_cobro_id')->orderByDesc('created_at');
+    }
+
+    /**
+     * Relación: lotes a los que pertenece esta cuenta
+     */
+    public function lotes()
+    {
+        return $this->belongsToMany(LoteCuentaCobro::class, 'lote_cuenta_cobro', 'cuenta_cobro_id', 'lote_id')
+            ->withPivot(['estado_en_lote', 'nota', 'procesado_at'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Relación: lote actual (referencia rápida)
+     */
+    public function loteActual()
+    {
+        return $this->belongsTo(LoteCuentaCobro::class, 'lote_actual_id');
+    }
+
+    /**
+     * Relación: eventos de tracking (seguimiento de envío)
+     */
+    public function trackingEventos()
+    {
+        return $this->hasMany(TrackingEvento::class, 'cuenta_cobro_id')->orderByDesc('created_at');
     }
 
     /**
