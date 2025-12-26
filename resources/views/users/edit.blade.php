@@ -504,9 +504,14 @@
                             Rol y Permisos
                         </h3>
 
+                        @php
+                            $rolesTraducidos = config('permisos_traducidos.roles', []);
+                            $rolActualInfo = $rolesTraducidos[$user->role?->name ?? ''] ?? null;
+                            $rolActualNombre = $rolActualInfo['nombre_es'] ?? ($user->role?->name ?? 'Sin rol asignado');
+                        @endphp
                         <div class="info-box">
                             <span class="material-symbols-rounded">info</span>
-                            <div>Rol actual: <strong>{{ $user->role?->name ?? 'Sin rol asignado' }}</strong></div>
+                            <div>Rol actual: <strong>{{ $rolActualNombre }}</strong></div>
                         </div>
 
                         <div class="form-grid">
@@ -524,8 +529,12 @@
                                     >
                                         <option value="">Selecciona un rol</option>
                                         @foreach ($roles as $role)
+                                            @php
+                                                $rolInfo = $rolesTraducidos[$role->name] ?? null;
+                                                $rolNombre = $rolInfo['nombre_es'] ?? ucfirst(str_replace('_', ' ', $role->name));
+                                            @endphp
                                             <option value="{{ $role->id }}" {{ $user->role_id == $role->id ? 'selected' : '' }}>
-                                                {{ ucfirst(str_replace('_', ' ', $role->name)) }}
+                                                {{ $rolNombre }}
                                             </option>
                                         @endforeach
                                     </select>

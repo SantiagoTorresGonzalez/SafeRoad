@@ -23,7 +23,7 @@ return new class extends Migration
             'admin_programa' => 'Admin del Programa - Control total, reportes, usuarios',
             'auxiliar' => 'Auxiliar - Crea cuentas, ve clientes, historial',
             'administrador' => 'Administrador - Aprueba, supervisa y verifica',
-            'tesoreria' => 'Tesorería - Valida montos, paga y notifica cliente',
+            'tesoreria' => 'Tesoreria - Valida montos, paga y notifica cliente',
         ];
 
         $roleIds = [];
@@ -35,7 +35,7 @@ return new class extends Migration
             $roleIds[$name] = $role->id;
         }
 
-        // 3. Asignar usuario específico a admin_programa (usar consultas directas)
+        // 3. Asignar usuario especï¿½fico a admin_programa (usar consultas directas)
         $adminEmail = 'daniel00250@hotmail.com';
         $exists = DB::table('users')->where('email', $adminEmail)->exists();
 

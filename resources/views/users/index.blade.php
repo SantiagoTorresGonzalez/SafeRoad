@@ -70,6 +70,9 @@
     </div>
 
     <!-- Filtros -->
+    @php
+        $rolesTraducidos = config('permisos_traducidos.roles', []);
+    @endphp
     <div class="filters-bar">
         <div class="filter-group" style="flex: 2;">
             <label>Buscar</label>
@@ -79,11 +82,9 @@
             <label>Rol</label>
             <select id="roleFilter" class="form-control" onchange="filterTable()">
                 <option value="">Todos los roles</option>
-                <option value="super_admin">Super Admin</option>
-                <option value="admin_programa">Admin Programa</option>
-                <option value="administrador">Administrador</option>
-                <option value="auxiliar">Auxiliar</option>
-                <option value="tesoreria">Tesorería</option>
+                @foreach($rolesTraducidos as $roleName => $rolInfo)
+                    <option value="{{ $roleName }}">{{ $rolInfo['nombre_es'] }}</option>
+                @endforeach
                 <option value="sin_rol">Sin Rol</option>
             </select>
         </div>
@@ -108,6 +109,8 @@
                     @foreach($users as $index => $user)
                         @php
                             $roleName = $user->role ? strtolower($user->role->name) : 'sin_rol';
+                            $rolInfo = $rolesTraducidos[$user->role?->name ?? ''] ?? null;
+                            $rolNombreEs = $rolInfo['nombre_es'] ?? ($user->role ? ucfirst(str_replace('_', ' ', $user->role->name)) : 'Sin Rol');
                             $badgeClass = match($roleName) {
                                 'super_admin' => 'badge-red',
                                 'admin_programa' => 'badge-purple',
@@ -130,7 +133,7 @@
                             </td>
                             <td>
                                 <span class="badge {{ $badgeClass }}">
-                                    {{ $user->role ? ucfirst(str_replace('_', ' ', $user->role->name)) : 'Sin Rol' }}
+                                    {{ $rolNombreEs }}
                                 </span>
                             </td>
                             <td>{{ $user->created_at->format('d/m/Y') }}<br><span class="text-muted">{{ $user->created_at->format('H:i') }}</span></td>
