@@ -12,6 +12,9 @@ class NotificacionService
     /**
      * Obtener estadísticas de notificaciones para un usuario
      */
+    /**
+     * Obtener estadísticas de notificaciones para un usuario
+     */
     public function obtenerEstadisticas(int $userId): array
     {
         $query = Notificacion::where('user_id', $userId);
@@ -22,6 +25,7 @@ class NotificacionService
             'leidas' => (clone $query)->where('leida', true)->count(),
             'por_tipo' => [],
             'por_prioridad' => [],
+            'hoy' => (clone $query)->whereDate('created_at', Carbon::today())->count(), // ESTA ES LA QUE FALTABA
             'ultimas_24h' => (clone $query)
                 ->where('created_at', '>=', Carbon::now()->subDay())
                 ->count(),
@@ -41,8 +45,9 @@ class NotificacionService
             $stats['por_tipo'] = [];
         }
 
-        // Intentar obtener estadísticas por prioridad si la columna existe
+        // Intentar obtener estadísticas por prioridad
         try {
+            // Primero verificamos si la columna 'prioridad' existe realmente en la tabla
             $stats['por_prioridad'] = (clone $query)
                 ->select('prioridad', DB::raw('count(*) as cantidad'))
                 ->groupBy('prioridad')
