@@ -437,7 +437,7 @@ class CuentaCobroController extends Controller
             ]);
         }
     } catch (\Exception $e) {
-        \Log::error('Error creando notificaciones de cuenta de cobro: ' . $e->getMessage());
+        \dd($e->getMessage());
     }
 
     return redirect()->route('cuentas_cobro.index')->with('success', $msg);
