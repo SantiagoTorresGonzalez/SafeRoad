@@ -11,6 +11,7 @@ use App\Models\Notificacion;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Tercero;
+use App\Services\NotificacionService;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
@@ -429,6 +430,7 @@ class CuentaCobroController extends Controller
             Notificacion::create([
                 'user_id' => $usuario->id,
                 'tipo' => 'cuenta_cobro',
+                'prioridad' => 'normal',
                 'titulo' => 'Nueva cuenta para revisión (' . ucfirst($startStage) . ')',
                 'mensaje' => 'Cuenta #' . $cuenta->numero . ' por $' . number_format($cuenta->valor_total, 2, ',', '.') . ' - Beneficiario: ' . $cuenta->nombre_beneficiario,
                 'cuenta_cobro_id' => $cuenta->id,
