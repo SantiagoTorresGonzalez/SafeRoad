@@ -1558,7 +1558,7 @@ class CuentaCobroController extends Controller
         // Obtener estadísticas
         $stats = [
             'total_cuentas' => CuentaCobro::count(),
-            'monto_total' => CuentaCobro::sum('monto_total'),
+            'monto_total' => CuentaCobro::sum('valor_total'),
             'pendientes' => CuentaCobro::where('estado', 'enviado')->count(),
             'pagadas' => CuentaCobro::where('estado', 'pagado')->count(),
         ];
@@ -1674,7 +1674,7 @@ class CuentaCobroController extends Controller
             $sheet->setCellValue('I' . $row, $cuenta->concepto_cobro ?? '');
             $sheet->setCellValue('J' . $row, $cuenta->subtotal ?? 0);
             $sheet->setCellValue('K' . $row, $cuenta->valor_iva ?? 0);
-            $sheet->setCellValue('L' . $row, $cuenta->monto_total ?? 0);
+            $sheet->setCellValue('L' . $row, $cuenta->valor_total ?? 0);
             $sheet->setCellValue('M' . $row, ucfirst($cuenta->estado ?? 'borrador'));
             $sheet->setCellValue('N' . $row, $cuenta->fecha_vencimiento ? Carbon::parse($cuenta->fecha_vencimiento)->format('d/m/Y') : '-');
 
