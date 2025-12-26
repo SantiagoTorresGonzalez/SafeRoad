@@ -70,7 +70,7 @@ return new class extends Migration
             $table->boolean('activa')->default(true);
             $table->timestamps();
             
-            $table->unique(['plantilla_flujo_id', 'etapa_origen_id', 'accion']);
+            $table->unique(['plantilla_flujo_id', 'etapa_origen_id', 'accion'], 'uidx_transiciones_flujo_compuesto');
         });
 
         // Reglas de asignación automática
