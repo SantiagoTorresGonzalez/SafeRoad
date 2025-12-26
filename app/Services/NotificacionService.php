@@ -25,12 +25,17 @@ class NotificacionService
             'leidas' => (clone $query)->where('leida', true)->count(),
             'por_tipo' => [],
             'por_prioridad' => [],
-            'hoy' => (clone $query)->whereDate('created_at', Carbon::today())->count(), // ESTA ES LA QUE FALTABA
+            'hoy' => (clone $query)->whereDate('created_at', Carbon::today())->count(),
             'ultimas_24h' => (clone $query)
                 ->where('created_at', '>=', Carbon::now()->subDay())
                 ->count(),
             'ultima_semana' => (clone $query)
                 ->where('created_at', '>=', Carbon::now()->subWeek())
+                ->count(),
+            // AGREGAMOS ESTA PARA QUE NO SE ROMPA LA LÍNEA 410 DE LA VISTA
+            'accion_pendiente' => (clone $query)
+                ->where('leida', false)
+                ->whereNotNull('accion_url')
                 ->count(),
         ];
 
