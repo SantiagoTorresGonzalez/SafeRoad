@@ -8,12 +8,12 @@
     :root {
         --primary: #116dff;
         --primary-dark: #0056d6;
-        --secondary: #0f172a; /* Slate 900 */
-        --text-main: #334155; /* Slate 700 */
-        --text-light: #64748b; /* Slate 500 */
-        --bg-body: #f8fafc; /* Slate 50 */
+        --secondary: #0f172a;
+        --text-main: #334155;
+        --text-light: #64748b;
+        --bg-body: #f8fafc;
         --bg-card: #ffffff;
-        --border-color: #e2e8f0; /* Slate 200 */
+        --border-color: #e2e8f0;
         --success: #10b981;
         --warning: #f59e0b;
         --danger: #ef4444;
@@ -24,10 +24,10 @@
     }
 
     .notif-page-container {
-        max-width: 1000px;
+        max-width: 1100px;
         margin: 0 auto;
-        padding: 40px 20px;
-        font-family: 'Inter', sans-serif;
+        padding: 40px 24px;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     /* Header */
@@ -57,10 +57,11 @@
     .header-actions {
         display: flex;
         gap: 12px;
+        flex-wrap: wrap;
     }
 
     /* Buttons */
-    .btn {
+    .btn-notif {
         display: inline-flex;
         align-items: center;
         gap: 8px;
@@ -74,34 +75,37 @@
         cursor: pointer;
     }
 
-    .btn-white {
+    .btn-notif-white {
         background: white;
         border-color: var(--border-color);
         color: var(--text-main);
         box-shadow: var(--shadow-sm);
     }
 
-    .btn-white:hover {
+    .btn-notif-white:hover {
         background: #f8fafc;
         border-color: #cbd5e1;
         color: var(--secondary);
         transform: translateY(-1px);
+        text-decoration: none;
     }
 
-    .btn-primary {
+    .btn-notif-primary {
         background: var(--primary);
         color: white;
         box-shadow: 0 2px 4px rgba(17, 109, 255, 0.2);
     }
 
-    .btn-primary:hover {
+    .btn-notif-primary:hover {
         background: var(--primary-dark);
         transform: translateY(-1px);
+        color: white;
+        text-decoration: none;
     }
 
-    .btn-icon {
-        width: 36px;
-        height: 36px;
+    .btn-icon-notif {
+        width: 38px;
+        height: 38px;
         padding: 0;
         display: inline-flex;
         align-items: center;
@@ -110,36 +114,116 @@
         color: var(--text-light);
         border: 1px solid var(--border-color);
         background: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
     }
 
-    .btn-icon:hover {
+    .btn-icon-notif:hover {
         color: var(--primary);
-        background: #f0f9ff;
+        background: #eff6ff;
         border-color: #bae6fd;
     }
 
-    /* Stats Banner */
-    .stats-banner {
-        background: #eff6ff;
-        border: 1px solid #dbeafe;
+    /* Stats Cards Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    @media (max-width: 900px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 500px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: var(--radius-md);
+        padding: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: all 0.2s ease;
+    }
+
+    .stat-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .stat-card.stat-primary { border-left: 4px solid var(--primary); }
+    .stat-card.stat-warning { border-left: 4px solid var(--warning); }
+    .stat-card.stat-success { border-left: 4px solid var(--success); }
+    .stat-card.stat-danger { border-left: 4px solid var(--danger); }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .stat-icon.icon-primary { background: #eff6ff; color: var(--primary); }
+    .stat-icon.icon-warning { background: #fef3c7; color: var(--warning); }
+    .stat-icon.icon-success { background: #d1fae5; color: var(--success); }
+    .stat-icon.icon-danger { background: #fee2e2; color: var(--danger); }
+
+    .stat-content h3 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+        color: var(--secondary);
+        line-height: 1;
+    }
+
+    .stat-content p {
+        font-size: 13px;
+        color: var(--text-light);
+        margin: 4px 0 0 0;
+        font-weight: 500;
+    }
+
+    /* Unread Banner */
+    .unread-banner {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border: 1px solid #bfdbfe;
         border-radius: var(--radius-md);
         padding: 16px 24px;
         display: flex;
         align-items: center;
         gap: 16px;
-        margin-bottom: 32px;
+        margin-bottom: 24px;
         color: #1e40af;
     }
 
-    .stats-icon {
-        width: 32px;
-        height: 32px;
-        background: #dbeafe;
-        border-radius: 50%;
+    .unread-banner-icon {
+        width: 40px;
+        height: 40px;
+        background: #3b82f6;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #1e40af;
+        color: white;
+    }
+
+    .unread-banner p {
+        margin: 0;
+        font-weight: 500;
+        font-size: 15px;
     }
 
     /* Notification List */
@@ -168,7 +252,7 @@
     }
 
     .notif-card.unread {
-        background: #f8fafc;
+        background: linear-gradient(135deg, #fafbff 0%, #f5f8ff 100%);
         border-left: 4px solid var(--primary);
     }
 
@@ -178,9 +262,9 @@
 
     /* Icons */
     .notif-icon-box {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -190,6 +274,7 @@
     .icon-aprobacion { background: #ecfdf5; color: #059669; }
     .icon-rechazo { background: #fef2f2; color: #dc2626; }
     .icon-cuenta { background: #eff6ff; color: #2563eb; }
+    .icon-recordatorio { background: #fef3c7; color: #d97706; }
     .icon-info { background: #f1f5f9; color: #475569; }
 
     /* Content */
@@ -221,11 +306,11 @@
     }
 
     .badge-new {
-        background: #eff6ff;
-        color: var(--primary);
-        font-size: 11px;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        font-size: 10px;
         font-weight: 700;
-        padding: 2px 8px;
+        padding: 3px 10px;
         border-radius: 999px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -234,7 +319,7 @@
     .notif-message {
         color: var(--text-main);
         font-size: 15px;
-        line-height: 1.5;
+        line-height: 1.6;
         margin: 0 0 16px 0;
     }
 
@@ -257,6 +342,8 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        position: relative;
+        z-index: 2;
     }
 
     .action-link {
@@ -278,6 +365,7 @@
         border-color: var(--primary);
         color: var(--primary);
         background: #eff6ff;
+        text-decoration: none;
     }
 
     .action-link.primary {
@@ -288,43 +376,109 @@
 
     .action-link.primary:hover {
         background: var(--primary-dark);
+        color: white;
     }
 
     /* Empty State */
     .empty-state {
         text-align: center;
-        padding: 60px 20px;
+        padding: 80px 20px;
         background: white;
         border-radius: var(--radius-md);
         border: 2px dashed var(--border-color);
     }
 
     .empty-icon {
-        font-size: 48px;
+        font-size: 64px;
         color: #cbd5e1;
-        margin-bottom: 16px;
+        margin-bottom: 20px;
+    }
+
+    .empty-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--secondary);
+        margin: 0 0 8px 0;
     }
 
     .empty-text {
         color: var(--text-light);
-        font-size: 16px;
+        font-size: 15px;
+        margin: 0;
+    }
+
+    /* Filter Section */
+    .filter-section {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .filter-row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .filter-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .filter-group select {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 14px;
+        color: var(--text-main);
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .filter-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(17, 109, 255, 0.1);
     }
 
     /* Responsive */
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
         .notif-card {
             flex-direction: column;
+            padding: 20px;
         }
         .notif-header {
             flex-direction: column;
-            gap: 8px;
+            gap: 12px;
         }
         .notif-actions {
             width: 100%;
             margin-top: 16px;
-            justify-content: flex-end;
         }
         .action-link {
+            flex: 1;
+            justify-content: center;
+        }
+        .header-actions {
+            width: 100%;
+        }
+        .header-actions .btn-notif {
             flex: 1;
             justify-content: center;
         }
@@ -340,91 +494,119 @@
         </div>
         <div class="header-actions">
             @if($noLeidas > 0)
-                <form action="{{ route('notificaciones.marcarTodasLeidas') }}" method="POST">
+                <form action="{{ route('notificaciones.marcarTodasLeidas') }}" method="POST" style="display: inline;">
                     @csrf
-                    <button type="submit" class="btn btn-white">
+                    <button type="submit" class="btn-notif btn-notif-white">
                         <span class="material-symbols-rounded">done_all</span>
                         Marcar todas leídas
                     </button>
                 </form>
             @endif
-            <a href="{{ route('notificaciones.preferencias') }}" class="btn btn-white">
+            <a href="{{ route('notificaciones.preferencias') }}" class="btn-notif btn-notif-white">
                 <span class="material-symbols-rounded">settings</span>
                 Preferencias
             </a>
-            <a href="{{ route('dashboard') }}" class="btn btn-white">
+            <a href="{{ route('dashboard') }}" class="btn-notif btn-notif-white">
                 <span class="material-symbols-rounded">arrow_back</span>
                 Volver
             </a>
         </div>
     </div>
 
-    <!-- Stats Banner -->
+    <!-- Stats Cards -->
     @if(isset($estadisticas))
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--primary) !important;">
-                <div class="card-body py-3">
-                    <div class="d-flex align-items-center">
-                        <span class="material-symbols-rounded text-primary me-2">notifications</span>
-                        <div>
-                            <div class="h4 mb-0">{{ $estadisticas['total'] }}</div>
-                            <small class="text-muted">Total</small>
-                        </div>
-                    </div>
-                </div>
+    <div class="stats-grid">
+        <div class="stat-card stat-primary">
+            <div class="stat-icon icon-primary">
+                <span class="material-symbols-rounded">notifications</span>
+            </div>
+            <div class="stat-content">
+                <h3>{{ $estadisticas['total'] }}</h3>
+                <p>Total</p>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--warning) !important;">
-                <div class="card-body py-3">
-                    <div class="d-flex align-items-center">
-                        <span class="material-symbols-rounded text-warning me-2">mark_email_unread</span>
-                        <div>
-                            <div class="h4 mb-0">{{ $estadisticas['no_leidas'] }}</div>
-                            <small class="text-muted">Sin leer</small>
-                        </div>
-                    </div>
-                </div>
+        <div class="stat-card stat-warning">
+            <div class="stat-icon icon-warning">
+                <span class="material-symbols-rounded">mark_email_unread</span>
+            </div>
+            <div class="stat-content">
+                <h3>{{ $estadisticas['no_leidas'] }}</h3>
+                <p>Sin leer</p>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--success) !important;">
-                <div class="card-body py-3">
-                    <div class="d-flex align-items-center">
-                        <span class="material-symbols-rounded text-success me-2">today</span>
-                        <div>
-                            <div class="h4 mb-0">{{ $estadisticas['hoy'] }}</div>
-                            <small class="text-muted">Hoy</small>
-                        </div>
-                    </div>
-                </div>
+        <div class="stat-card stat-success">
+            <div class="stat-icon icon-success">
+                <span class="material-symbols-rounded">today</span>
+            </div>
+            <div class="stat-content">
+                <h3>{{ $estadisticas['hoy'] }}</h3>
+                <p>Hoy</p>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid var(--danger) !important;">
-                <div class="card-body py-3">
-                    <div class="d-flex align-items-center">
-                        <span class="material-symbols-rounded text-danger me-2">priority_high</span>
-                        <div>
-                            <div class="h4 mb-0">{{ $estadisticas['accion_pendiente'] }}</div>
-                            <small class="text-muted">Requiere acción</small>
-                        </div>
-                    </div>
-                </div>
+        <div class="stat-card stat-danger">
+            <div class="stat-icon icon-danger">
+                <span class="material-symbols-rounded">priority_high</span>
+            </div>
+            <div class="stat-content">
+                <h3>{{ $estadisticas['accion_pendiente'] ?? 0 }}</h3>
+                <p>Requiere acción</p>
             </div>
         </div>
     </div>
     @endif
     
     @if($noLeidas > 0)
-        <div class="stats-banner">
-            <div class="stats-icon">
+        <div class="unread-banner">
+            <div class="unread-banner-icon">
                 <span class="material-symbols-rounded">notifications_active</span>
             </div>
-            <p style="margin: 0; font-weight: 500;">Tienes <strong>{{ $noLeidas }}</strong> notificaciones sin leer</p>
+            <p>Tienes <strong>{{ $noLeidas }}</strong> notificación{{ $noLeidas > 1 ? 'es' : '' }} sin leer</p>
         </div>
     @endif
+
+    <!-- Filters -->
+    <div class="filter-section">
+        <form method="GET" action="{{ route('notificaciones.index') }}">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>Estado</label>
+                    <select name="leida" onchange="this.form.submit()">
+                        <option value="">Todas</option>
+                        <option value="no" {{ request('leida') === 'no' ? 'selected' : '' }}>Sin leer</option>
+                        <option value="si" {{ request('leida') === 'si' ? 'selected' : '' }}>Leídas</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Categoría</label>
+                    <select name="categoria" onchange="this.form.submit()">
+                        <option value="">Todas</option>
+                        <option value="cuenta_cobro" {{ request('categoria') === 'cuenta_cobro' ? 'selected' : '' }}>Cuentas de Cobro</option>
+                        <option value="aprobacion" {{ request('categoria') === 'aprobacion' ? 'selected' : '' }}>Aprobaciones</option>
+                        <option value="recordatorio" {{ request('categoria') === 'recordatorio' ? 'selected' : '' }}>Recordatorios</option>
+                        <option value="sistema" {{ request('categoria') === 'sistema' ? 'selected' : '' }}>Sistema</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Prioridad</label>
+                    <select name="prioridad" onchange="this.form.submit()">
+                        <option value="">Todas</option>
+                        <option value="alta" {{ request('prioridad') === 'alta' ? 'selected' : '' }}>Alta</option>
+                        <option value="normal" {{ request('prioridad') === 'normal' ? 'selected' : '' }}>Normal</option>
+                        <option value="baja" {{ request('prioridad') === 'baja' ? 'selected' : '' }}>Baja</option>
+                    </select>
+                </div>
+                @if(request()->anyFilled(['leida', 'categoria', 'prioridad']))
+                <div class="filter-group" style="flex: 0;">
+                    <label>&nbsp;</label>
+                    <a href="{{ route('notificaciones.index') }}" class="btn-notif btn-notif-white" style="padding: 10px 16px;">
+                        <span class="material-symbols-rounded" style="font-size: 18px;">close</span>
+                        Limpiar
+                    </a>
+                </div>
+                @endif
+            </div>
+        </form>
+    </div>
 
     <!-- Notifications List -->
     <div class="notif-list">
@@ -432,19 +614,21 @@
             <div class="notif-card {{ !$notif->leida ? 'unread' : '' }}">
                 <!-- Icon -->
                 <div class="notif-icon-box {{ 
-                    match($notif->tipo) {
+                    match($notif->tipo ?? 'info') {
                         'aprobacion' => 'icon-aprobacion',
                         'rechazo' => 'icon-rechazo',
                         'cuenta_cobro' => 'icon-cuenta',
+                        'recordatorio' => 'icon-recordatorio',
                         default => 'icon-info'
                     }
                 }}">
-                    <span class="material-symbols-rounded" style="font-size: 24px;">
+                    <span class="material-symbols-rounded" style="font-size: 26px;">
                         {{ 
-                            match($notif->tipo) {
+                            match($notif->tipo ?? 'info') {
                                 'aprobacion' => 'check_circle',
                                 'rechazo' => 'cancel',
                                 'cuenta_cobro' => 'receipt_long',
+                                'recordatorio' => 'alarm',
                                 default => 'info'
                             }
                         }}
@@ -461,9 +645,9 @@
                             @endif
                         </div>
                         
-                        <!-- Desktop Actions -->
-                        <div class="notif-actions" style="display: none; @media(min-width: 640px){display:flex;}">
-                            @if($notif->cuenta_cobro_id)
+                        <!-- Actions -->
+                        <div class="notif-actions">
+                            @if($notif->cuenta_cobro_id || $notif->accion_url)
                                 <a href="{{ route('notificaciones.visitar', $notif->id) }}" class="action-link primary">
                                     <span class="material-symbols-rounded" style="font-size: 18px;">visibility</span>
                                     Ver detalles
@@ -471,13 +655,21 @@
                             @endif
                             
                             @if(!$notif->leida)
-                                <form action="{{ route('notificaciones.marcarLeida', $notif->id) }}" method="POST">
+                                <form action="{{ route('notificaciones.marcarLeida', $notif->id) }}" method="POST" style="display: inline;">
                                     @csrf
-                                    <button type="submit" class="btn-icon" title="Marcar como leída">
+                                    <button type="submit" class="btn-icon-notif" title="Marcar como leída">
                                         <span class="material-symbols-rounded" style="font-size: 20px;">check</span>
                                     </button>
                                 </form>
                             @endif
+                            
+                            <form action="{{ route('notificaciones.destroy', $notif->id) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Eliminar esta notificación?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn-icon-notif" title="Eliminar notificación" style="color: #ef4444;">
+                                    <span class="material-symbols-rounded" style="font-size: 20px;">delete</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
 
@@ -488,44 +680,25 @@
                             <span class="material-symbols-rounded" style="font-size: 16px;">schedule</span>
                             {{ $notif->created_at->diffForHumans() }}
                         </div>
+                        @if($notif->prioridad && $notif->prioridad !== 'normal')
+                            <div class="footer-item" style="color: {{ $notif->prioridad === 'alta' ? '#ef4444' : '#64748b' }};">
+                                <span class="material-symbols-rounded" style="font-size: 16px;">flag</span>
+                                Prioridad {{ ucfirst($notif->prioridad) }}
+                            </div>
+                        @endif
                         @if($notif->leida && $notif->fecha_leida)
-                            <div class="footer-item" style="color: #94a3b8;">
+                            <div class="footer-item" style="color: #10b981;">
                                 <span class="material-symbols-rounded" style="font-size: 16px;">done_all</span>
                                 Leída {{ $notif->fecha_leida->diffForHumans() }}
                             </div>
                         @endif
                     </div>
-
-                    <!-- Mobile Actions -->
-                    <div class="notif-actions" style="display: flex; margin-top: 16px; @media(min-width: 640px){display:none;}">
-                        @if($notif->cuenta_cobro_id)
-                            <a href="{{ route('notificaciones.visitar', $notif->id) }}" class="action-link primary" style="flex: 1; justify-content: center;">
-                                Ver detalles
-                            </a>
-                        @endif
-                        @if(!$notif->leida)
-                            <form action="{{ route('notificaciones.marcarLeida', $notif->id) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="btn-icon" style="width: 40px; height: 40px;">
-                                    <span class="material-symbols-rounded">check</span>
-                                </button>
-                            </form>
-                        @endif
-                    </div>
                 </div>
-                
-                <!-- Clickable Overlay for UX -->
-                @if($notif->cuenta_cobro_id)
-                    <a href="{{ route('notificaciones.visitar', $notif->id) }}" style="position: absolute; inset: 0; z-index: 1;" aria-hidden="true"></a>
-                    <style>
-                        .notif-actions, form, button, a.action-link { position: relative; z-index: 2; }
-                    </style>
-                @endif
             </div>
         @empty
             <div class="empty-state">
                 <span class="material-symbols-rounded empty-icon">notifications_off</span>
-                <h3 style="font-size: 18px; font-weight: 600; color: var(--secondary); margin-bottom: 8px;">No tienes notificaciones</h3>
+                <h3 class="empty-title">No tienes notificaciones</h3>
                 <p class="empty-text">Te avisaremos cuando haya actualizaciones importantes.</p>
             </div>
         @endforelse
@@ -533,8 +706,8 @@
 
     <!-- Pagination -->
     @if($notificaciones->hasPages())
-        <div style="margin-top: 32px;">
-            {{ $notificaciones->links() }}
+        <div style="margin-top: 32px; display: flex; justify-content: center;">
+            {{ $notificaciones->withQueryString()->links() }}
         </div>
     @endif
 </div>

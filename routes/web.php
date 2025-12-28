@@ -67,6 +67,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/notificaciones/{id}/visitar', [NotificacionController::class, 'visitar'])->name('notificaciones.visitar');
     Route::post('/notificaciones/{id}/marcar-leida', [NotificacionController::class, 'marcarLeida'])->name('notificaciones.marcarLeida');
     Route::post('/notificaciones/marcar-todas-leidas', [NotificacionController::class, 'marcarTodasLeidas'])->name('notificaciones.marcarTodasLeidas');
+    Route::delete('/notificaciones/{id}', [NotificacionController::class, 'destroy'])->name('notificaciones.destroy');
     Route::get('/notificaciones/preferencias', [NotificacionController::class, 'preferencias'])->name('notificaciones.preferencias');
     Route::post('/notificaciones/preferencias', [NotificacionController::class, 'guardarPreferencias'])->name('notificaciones.guardarPreferencias');
     
