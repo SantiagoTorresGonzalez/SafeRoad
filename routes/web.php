@@ -331,3 +331,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('cuentas_cobro.reenviar');
 });
 
+// ========================================
+// SAFEROAD SC — RUTAS PÚBLICAS
+// ========================================
+Route::get('/mapa', [App\Http\Controllers\MapaController::class, 'index'])->name('mapa.index');
+Route::post('/mapa/reportar', [App\Http\Controllers\MapaController::class, 'store'])->name('mapa.store');

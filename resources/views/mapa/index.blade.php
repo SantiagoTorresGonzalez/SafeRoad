@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.saferoad')
 
 @section('title', 'SafeRoad SC — Mapa de siniestros viales')
 
@@ -8,7 +8,7 @@
         .mapa-container {
             display: flex;
             gap: 20px;
-            height: calc(100vh - 80px);
+            height: calc(100vh - 96px);
         }
 
         #mapa {
@@ -26,7 +26,6 @@
             overflow-y: auto;
         }
 
-        /* Leyenda */
         .leyenda-item {
             display: flex;
             align-items: center;
@@ -50,7 +49,6 @@
         .dot-naranja { background: #f97316; }
         .dot-verde   { background: #22c55e; }
 
-        /* Stats */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -77,7 +75,6 @@
             margin-top: 2px;
         }
 
-        /* Formulario */
         .form-reporte { display: none; }
         .form-reporte.visible { display: block; }
 
@@ -96,9 +93,7 @@
             background: #f0fdf4;
         }
 
-        .form-group {
-            margin-bottom: 12px;
-        }
+        .form-group { margin-bottom: 12px; }
 
         .form-group label {
             display: block;
@@ -124,7 +119,7 @@
         .form-group select:focus,
         .form-group textarea:focus {
             border-color: #116dff;
-            box-shadow: 0 0 0 3px rgba(17, 109, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(17,109,255,0.1);
         }
 
         .form-group textarea {
@@ -189,7 +184,7 @@
             display: none;
         }
 
-        .alerta-ok  {
+        .alerta-ok {
             background: #f0fdf4;
             color: #16a34a;
             border: 1px solid #bbf7d0;
@@ -209,7 +204,6 @@
             padding: 8px 0;
         }
 
-        /* Card reutilizada del proyecto */
         .sr-card {
             background: white;
             border-radius: 12px;
@@ -227,7 +221,6 @@
             margin-bottom: 12px;
         }
 
-        /* Banner superior igual al dashboard */
         .mapa-banner {
             background: linear-gradient(135deg, #116dff 0%, #0058d6 100%);
             border-radius: 12px;
@@ -250,38 +243,31 @@
             opacity: 0.85;
             margin: 0;
         }
-
-        .cursor-crosshair { cursor: crosshair !important; }
     </style>
 @endpush
 
 @section('content')
 
-    {{-- Banner --}}
     <div class="mapa-banner">
         <div>
             <h2>
                 <span class="material-symbols-rounded" style="vertical-align: middle; font-size: 22px;">map</span>
-                SafeRoad SC — Mapa de siniestros viales
+                Mapa de siniestros viales
             </h2>
             <p>Provincia de Sabana Centro, Cundinamarca · Datos INMLCF 2024</p>
         </div>
-        <button class="btn-reportar" id="btn-reportar" onclick="activarReporte()">
+        <button class="btn-reportar" onclick="activarReporte()">
             <span class="material-symbols-rounded" style="font-size: 18px;">add_location_alt</span>
             Reportar punto de riesgo
         </button>
     </div>
 
-    {{-- Layout mapa + panel --}}
     <div class="mapa-container">
 
-        {{-- Mapa --}}
         <div id="mapa"></div>
 
-        {{-- Panel lateral --}}
         <div class="panel-lateral">
 
-            {{-- Leyenda --}}
             <div class="sr-card">
                 <div class="sr-card-title">Leyenda</div>
                 <div class="leyenda-item">
@@ -298,45 +284,74 @@
                 </div>
             </div>
 
-            {{-- Estadísticas --}}
             <div class="sr-card">
-                <div class="sr-card-title">Estadísticas</div>
+                <div class="sr-card-title">Estadísticas de la plataforma</div>
                 <div class="stats-grid">
                     <div class="stat-item">
-                        <div class="stat-number">{{ $reportes->count() }}</div>
-                        <div class="stat-label">Reportes activos</div>
+                        <div class="stat-number">{{ $stats['total_reportes'] }}</div>
+                        <div class="stat-label">Total reportes</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">{{ $puntosRiesgo->count() }}</div>
-                        <div class="stat-label">Puntos de riesgo</div>
+                        <div class="stat-number" style="color: #f97316;">{{ $stats['reportes_hoy'] }}</div>
+                        <div class="stat-label">Reportes hoy</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">115</div>
-                        <div class="stat-label">Muertes en 2024</div>
+                        <div class="stat-number" style="color: #ef4444;">{{ $stats['pendientes'] }}</div>
+                        <div class="stat-label">Pendientes</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">11</div>
-                        <div class="stat-label">Municipios</div>
+                        <div class="stat-number" style="color: #116dff;">{{ $stats['en_atencion'] }}</div>
+                        <div class="stat-label">En atención</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" style="color: #22c55e;">{{ $stats['resueltos'] }}</div>
+                        <div class="stat-label">Resueltos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" style="font-size: 14px; color: #0f172a;">{{ $stats['municipio_top'] }}</div>
+                        <div class="stat-label">Municipio con más reportes</div>
                     </div>
                 </div>
             </div>
 
-            {{-- Instrucción / Formulario --}}
+            {{-- Reportes por municipio --}}
+            @if($stats['por_municipio']->count() > 0)
+            <div class="sr-card">
+                <div class="sr-card-title">Reportes por municipio</div>
+                @foreach($stats['por_municipio'] as $m)
+                    <div style="margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #475569; margin-bottom: 3px;">
+                            <span>{{ $m->municipio }}</span>
+                            <span style="font-weight: 600; color: #0f172a;">{{ $m->total }}</span>
+                        </div>
+                        <div style="background: #f1f5f9; border-radius: 4px; height: 5px; overflow: hidden;">
+                            <div style="
+                                background: #116dff;
+                                height: 100%;
+                                width: {{ $stats['total_reportes'] > 0 ? ($m->total / $stats['total_reportes']) * 100 : 0 }}%;
+                                border-radius: 4px;
+                            "></div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @endif
+
             <div class="sr-card" style="flex: 1;">
 
                 <div class="instruccion" id="instruccion">
                     <span class="material-symbols-rounded" style="font-size: 32px; color: #cbd5e1; display: block; margin-bottom: 8px;">add_location_alt</span>
-                    Haz clic en <strong>Reportar punto de riesgo</strong> y luego selecciona la ubicación en el mapa.
+                    Haz clic en <strong>Reportar punto de riesgo</strong> y selecciona la ubicación en el mapa.
                 </div>
 
                 <div class="form-reporte" id="form-reporte">
                     <div class="sr-card-title">Nuevo reporte</div>
 
                     <div class="alerta alerta-ok" id="alerta-ok">
-                        ✅ Reporte enviado correctamente. Quedará visible una vez validado.
+                        ✅ Reporte enviado. Quedará visible una vez validado.
                     </div>
                     <div class="alerta alerta-err" id="alerta-err">
-                        ❌ Error al enviar el reporte. Intenta de nuevo.
+                        ❌ Error al enviar. Intenta de nuevo.
                     </div>
 
                     <div class="form-group">
@@ -382,7 +397,6 @@
                     </div>
 
                     <button class="btn-enviar" onclick="enviarReporte()">
-                        <span class="material-symbols-rounded" style="font-size: 16px; vertical-align: middle;">send</span>
                         Enviar reporte
                     </button>
                     <button class="btn-cancelar" onclick="cancelarReporte()">Cancelar</button>
@@ -405,7 +419,6 @@
     let latSelec     = null;
     let lngSelec     = null;
 
-    // Inicializar mapa
     const mapa = L.map('mapa', {
         center: [4.9833, -74.0167],
         zoom: 11,
@@ -438,7 +451,6 @@
     const iconoNaranja = crearIcono('#f97316');
     const iconoVerde   = crearIcono('#22c55e');
 
-    // Puntos históricos
     puntosRiesgo.forEach(p => {
         L.marker([p.latitud, p.longitud], { icon: iconoRojo })
             .addTo(mapa)
@@ -450,7 +462,6 @@
             `);
     });
 
-    // Reportes ciudadanos
     reportes.forEach(r => {
         const icono = r.estado === 'resuelto' ? iconoVerde : iconoNaranja;
         L.marker([r.latitud, r.longitud], { icon: icono })
@@ -464,15 +475,11 @@
             `);
     });
 
-    // Clic en mapa
     mapa.on('click', function(e) {
         if (!modoReporte) return;
-
         latSelec = e.latlng.lat.toFixed(7);
         lngSelec = e.latlng.lng.toFixed(7);
-
         if (marcadorTemp) mapa.removeLayer(marcadorTemp);
-
         marcadorTemp = L.marker([latSelec, lngSelec], {
             icon: L.divIcon({
                 className: '',
@@ -487,7 +494,6 @@
                 iconAnchor: [9, 9],
             })
         }).addTo(mapa);
-
         const coordsEl = document.getElementById('coords-display');
         coordsEl.textContent = `Lat: ${latSelec} | Lng: ${lngSelec}`;
         coordsEl.classList.add('activo');
@@ -497,7 +503,7 @@
         modoReporte = true;
         document.getElementById('instruccion').style.display = 'none';
         document.getElementById('form-reporte').classList.add('visible');
-        document.getElementById('mapa').classList.add('cursor-crosshair');
+        document.getElementById('mapa').style.cursor = 'crosshair';
     }
 
     function cancelarReporte() {
@@ -510,7 +516,7 @@
         document.getElementById('coords-display').classList.remove('activo');
         document.getElementById('alerta-ok').style.display  = 'none';
         document.getElementById('alerta-err').style.display = 'none';
-        document.getElementById('mapa').classList.remove('cursor-crosshair');
+        document.getElementById('mapa').style.cursor = '';
     }
 
     async function enviarReporte() {
@@ -532,7 +538,6 @@
 
         try {
             const res = await fetch('{{ route("mapa.store") }}', { method: 'POST', body: datos });
-
             if (res.ok) {
                 document.getElementById('alerta-ok').style.display  = 'block';
                 document.getElementById('alerta-err').style.display = 'none';
@@ -544,7 +549,7 @@
                 document.getElementById('coords-display').textContent = 'Haz clic en el mapa para seleccionar';
                 document.getElementById('coords-display').classList.remove('activo');
                 modoReporte = false;
-                document.getElementById('mapa').classList.remove('cursor-crosshair');
+                document.getElementById('mapa').style.cursor = '';
             } else {
                 document.getElementById('alerta-err').style.display = 'block';
             }
