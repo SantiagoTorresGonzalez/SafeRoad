@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\ReporteVial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -9,10 +10,6 @@ use Illuminate\Support\Facades\Log;
 
 class PanelAutoridadController extends Controller
 {
-    /**
-     * Lista paginada de reportes con filtros.
-     * Middleware aplicado desde routes/web.php
-     */
     public function index(Request $request)
     {
         $query = ReporteVial::query()->orderByRaw("
@@ -42,11 +39,11 @@ class PanelAutoridadController extends Controller
         $reportes = $query->paginate(15)->withQueryString();
 
         $stats = [
-            'total'      => ReporteVial::count(),
-            'pendiente'  => ReporteVial::where('estado', 'pendiente')->count(),
-            'validado'   => ReporteVial::where('estado', 'validado')->count(),
-            'en_atencion'=> ReporteVial::where('estado', 'en_atencion')->count(),
-            'resuelto'   => ReporteVial::where('estado', 'resuelto')->count(),
+            'total'       => ReporteVial::count(),
+            'pendiente'   => ReporteVial::where('estado', 'pendiente')->count(),
+            'validado'    => ReporteVial::where('estado', 'validado')->count(),
+            'en_atencion' => ReporteVial::where('estado', 'en_atencion')->count(),
+            'resuelto'    => ReporteVial::where('estado', 'resuelto')->count(),
         ];
 
         $municipios = ReporteVial::select('municipio')
@@ -58,9 +55,6 @@ class PanelAutoridadController extends Controller
         return view('panel.index', compact('reportes', 'stats', 'municipios', 'tipos'));
     }
 
-    /**
-     * Actualizar estado de un reporte.
-     */
     public function actualizar(Request $request, int $id)
     {
         $request->validate([
@@ -91,17 +85,19 @@ class PanelAutoridadController extends Controller
         $reporte->notas_autoridad = $request->input('notas_autoridad');
         $reporte->save();
 
-        Log::info('[PANEL_AUTORIDAD] Cambio de estado en reporte', [
-            'reporte_id'      => $reporte->id,
-            'municipio'       => $reporte->municipio,
-            'tipo_riesgo'     => $reporte->tipo_riesgo,
-            'estado_anterior' => $estadoAnterior,
-            'estado_nuevo'    => $estadoNuevo,
-            'notas'           => $request->input('notas_autoridad'),
-            'autoridad_id'    => Auth::id(),
-            'autoridad_email' => Auth::user()->email ?? 'N/A',
-            'ip'              => $request->ip(),
-            'timestamp'       => now()->toDateTimeString(),
+        // ── Auditoría en BD ──────────────────────────────────────────
+        AuditLog::estadoCambiado(
+            $reporte->id,
+            $estadoAnterior,
+            $estadoNuevo,
+            $request->input('notas_autoridad')
+        );
+
+        // ── Log de archivo (respaldo) ────────────────────────────────
+        Log::info('[PANEL_AUTORIDAD] Cambio de estado', [
+            'reporte_id'   => $reporte->id,
+            'estado_nuevo' => $estadoNuevo,
+            'usuario_id'   => Auth::id(),
         ]);
 
         $labels = [

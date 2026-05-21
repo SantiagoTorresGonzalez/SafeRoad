@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\ReporteVial;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -9,16 +10,12 @@ use Illuminate\Support\Facades\Log;
 
 class PlanificadorController extends Controller
 {
-    /**
-     * Lista paginada de reportes gestionables por el planificador:
-     * solo estados validado, en_atencion y resuelto.
-     */
+    private array $estadosGestionables = ['validado', 'en_atencion', 'resuelto'];
+
     public function index(Request $request)
     {
-        $estadosGestionables = ['validado', 'en_atencion', 'resuelto'];
-
         $query = ReporteVial::query()
-            ->whereIn('estado', $estadosGestionables)
+            ->whereIn('estado', $this->estadosGestionables)
             ->orderByRaw("
                 CASE estado
                     WHEN 'validado'    THEN 1
@@ -33,7 +30,7 @@ class PlanificadorController extends Controller
             $query->where('municipio', $municipio);
         }
         if ($estado = $request->input('estado')) {
-            if (in_array($estado, $estadosGestionables)) {
+            if (in_array($estado, $this->estadosGestionables)) {
                 $query->where('estado', $estado);
             }
         }
@@ -46,27 +43,22 @@ class PlanificadorController extends Controller
 
         $reportes = $query->paginate(15)->withQueryString();
 
-        // ── Stats del pipeline ────────────────────────────────────────
         $stats = [
-            'validado'          => ReporteVial::where('estado', 'validado')->count(),
-            'en_atencion'       => ReporteVial::where('estado', 'en_atencion')->count(),
-            'resuelto'          => ReporteVial::where('estado', 'resuelto')->count(),
-            'total_gestionables'=> ReporteVial::whereIn('estado', $estadosGestionables)->count(),
+            'validado'           => ReporteVial::where('estado', 'validado')->count(),
+            'en_atencion'        => ReporteVial::where('estado', 'en_atencion')->count(),
+            'resuelto'           => ReporteVial::where('estado', 'resuelto')->count(),
+            'total_gestionables' => ReporteVial::whereIn('estado', $this->estadosGestionables)->count(),
         ];
 
-        // ── Valores para los selects ──────────────────────────────────
-        $municipios = ReporteVial::whereIn('estado', $estadosGestionables)
+        $municipios = ReporteVial::whereIn('estado', $this->estadosGestionables)
             ->select('municipio')->distinct()->orderBy('municipio')->pluck('municipio');
 
-        $tipos = ReporteVial::whereIn('estado', $estadosGestionables)
+        $tipos = ReporteVial::whereIn('estado', $this->estadosGestionables)
             ->select('tipo_riesgo')->distinct()->orderBy('tipo_riesgo')->pluck('tipo_riesgo');
 
         return view('planificador.index', compact('reportes', 'stats', 'municipios', 'tipos'));
     }
 
-    /**
-     * Avanzar estado: validado → en_atencion → resuelto.
-     */
     public function actualizar(Request $request, int $id)
     {
         $request->validate([
@@ -79,7 +71,6 @@ class PlanificadorController extends Controller
         $estadoAnterior = $reporte->estado;
         $estadoNuevo    = $request->input('nuevo_estado');
 
-        // Solo transiciones válidas para este rol
         $transiciones = [
             'validado'    => ['en_atencion'],
             'en_atencion' => ['resuelto'],
@@ -95,18 +86,18 @@ class PlanificadorController extends Controller
         $reporte->notas_autoridad = $request->input('notas_autoridad') ?? $reporte->notas_autoridad;
         $reporte->save();
 
-        // ── Log de auditoría ──────────────────────────────────────────
-        Log::info('[PLANIFICADOR] Cambio de estado en reporte', [
-            'reporte_id'         => $reporte->id,
-            'municipio'          => $reporte->municipio,
-            'tipo_riesgo'        => $reporte->tipo_riesgo,
-            'estado_anterior'    => $estadoAnterior,
-            'estado_nuevo'       => $estadoNuevo,
-            'notas'              => $request->input('notas_autoridad'),
-            'planificador_id'    => Auth::id(),
-            'planificador_email' => Auth::user()->email ?? 'N/A',
-            'ip'                 => $request->ip(),
-            'timestamp'          => now()->toDateTimeString(),
+        // ── Auditoría en BD ──────────────────────────────────────────
+        AuditLog::estadoCambiado(
+            $reporte->id,
+            $estadoAnterior,
+            $estadoNuevo,
+            $request->input('notas_autoridad')
+        );
+
+        Log::info('[PLANIFICADOR] Cambio de estado', [
+            'reporte_id'   => $reporte->id,
+            'estado_nuevo' => $estadoNuevo,
+            'usuario_id'   => Auth::id(),
         ]);
 
         $labels = [
