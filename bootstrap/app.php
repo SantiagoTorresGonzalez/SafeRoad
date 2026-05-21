@@ -16,6 +16,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.role' => \App\Http\Middleware\CheckRole::class,
         ]);
     })
+    ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
+        $schedule->command('app:cerrar-reportes-resueltos')
+                ->monthlyOn(1, '02:00')
+                ->withoutOverlapping()
+                ->runInBackground()
+                ->appendOutputTo(storage_path('logs/schedule_cierre.log'));
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
