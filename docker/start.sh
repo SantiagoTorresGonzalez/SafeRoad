@@ -1,5 +1,4 @@
 #!/bin/bash
-
 cd /var/www/html
 
 # Generar clave si no existe
@@ -17,7 +16,7 @@ php artisan view:cache
 # Ejecutar migraciones
 php artisan migrate --force
 
-# Ejecutar seeders de SafeRoad
+# Ejecutar seeders
 php artisan db:seed --class=SafeRoadRolesSeeder --force
 php artisan db:seed --class=SafeRoadUsersSeeder --force
 
