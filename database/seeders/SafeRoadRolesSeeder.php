@@ -22,6 +22,12 @@ class SafeRoadRolesSeeder extends Seeder
                 'created_at'  => now(),
                 'updated_at'  => now(),
             ],
+            [
+                'name'        => 'planificador_territorial',
+                'description' => 'Encargado de analizar tendencias y definir estrategias de seguridad vial a nivel regional.',
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ],
         ];
 
         foreach ($roles as $rol) {

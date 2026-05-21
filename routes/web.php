@@ -336,3 +336,11 @@ Route::middleware(['auth'])->group(function () {
 // ========================================
 Route::get('/mapa', [App\Http\Controllers\MapaController::class, 'index'])->name('mapa.index');
 Route::post('/mapa/reportar', [App\Http\Controllers\MapaController::class, 'store'])->name('mapa.store');
+
+// ========================================
+// SAFEROAD SC — RUTAS PANEL AUTORIDAD
+// ========================================
+Route::middleware(['auth'])->group(function () {
+    Route::get('/panel-autoridad', [App\Http\Controllers\PanelAutoridadController::class, 'index'])->name('panel.index');
+    Route::patch('/panel-autoridad/{id}', [App\Http\Controllers\PanelAutoridadController::class, 'actualizar'])->name('panel.actualizar');
+});
