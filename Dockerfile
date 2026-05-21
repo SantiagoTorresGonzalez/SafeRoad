@@ -48,4 +48,4 @@ RUN chmod +x /start.sh
 
 EXPOSE 8080
 
-CMD ["/start.sh"]
+CMD cp .env.example .env && php artisan key:generate && php artisan config:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=10000
