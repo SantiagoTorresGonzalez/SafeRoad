@@ -22,7 +22,7 @@ php artisan db:seed --class=SafeRoadRolesSeeder --force
 php artisan db:seed --class=SafeRoadUsersSeeder --force
 
 # Crear enlace simbólico de storage
-php artisan storage:link
+php artisan storage:link --force
 
 # Iniciar PHP-FPM en segundo plano
 php-fpm -D
