@@ -5,11 +5,15 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CrearUsuario;
 use App\Http\Controllers\MapaController;
 use App\Http\Controllers\PanelAutoridadController;
+use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\PlanificadorController;
 
 // ========================================
-// RUTA PRINCIPAL
+// RUTA PRINCIPAL — Landing Page
 // ========================================
-Route::get('/', fn() => redirect()->route('login'));
+Route::get('/', function () {
+    return view('home');
+})->name('home');
 
 // ========================================
 // AUTENTICACIÓN
@@ -28,9 +32,21 @@ Route::get('/mapa', [MapaController::class, 'index'])->name('mapa.index');
 Route::post('/mapa/reportar', [MapaController::class, 'store'])->name('mapa.store');
 
 // ========================================
+// CHATBOT — Solo usuarios autenticados
+// ========================================
+Route::middleware(['auth'])->group(function () {
+    Route::post('/chatbot/premium', [ChatbotController::class, 'premium'])->name('chatbot.premium');
+});
+
+// ========================================
 // SAFEROAD SC — RUTAS PANEL AUTORIDAD
 // ========================================
 Route::middleware(['auth'])->group(function () {
     Route::get('/panel-autoridad', [PanelAutoridadController::class, 'index'])->name('panel.index');
     Route::patch('/panel-autoridad/{id}', [PanelAutoridadController::class, 'actualizar'])->name('panel.actualizar');
+});
+
+Route::middleware(['auth', 'role:planificador_territorial'])->group(function () {
+    Route::get('/planificador', [PlanificadorController::class, 'index'])->name('planificador.index');
+    Route::patch('/planificador/{id}', [PlanificadorController::class, 'actualizar'])->name('planificador.actualizar');
 });
