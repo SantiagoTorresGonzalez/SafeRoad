@@ -27,7 +27,7 @@ class ChatbotController extends Controller
                 'Content-Type'  => 'application/json',
             ])->post('https://send.api.mailtrap.io/api/send', [
                 'from' => [
-                    'email' => 'hello@saferoadsc.com',
+                    'email' => 'hello@demomailtrap.co',
                     'name'  => 'SafeRoad SC',
                 ],
                 'to' => [
