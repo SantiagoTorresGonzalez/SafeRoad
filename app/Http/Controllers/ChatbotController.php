@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PremiumContactMail;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class ChatbotController extends Controller
 {
@@ -22,24 +23,7 @@ class ChatbotController extends Controller
         }
 
         try {
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . env('MAILTRAP_API_TOKEN'),
-                'Content-Type'  => 'application/json',
-            ])->post('https://send.api.mailtrap.io/api/send', [
-                'from' => [
-                    'email' => 'hello@demomailtrap.co',
-                    'name'  => 'SafeRoad SC',
-                ],
-                'to' => [
-                    ['email' => $user->email, 'name' => $user->name],
-                ],
-                'subject'   => 'SafeRoad SC – Tu acceso al módulo de Predicción con IA',
-                'html'      => view('emails.premium_contact', ['user' => $user])->render(),
-            ]);
-
-            if (!$response->successful()) {
-                throw new \Exception('Mailtrap API error: ' . $response->body());
-            }
+            Mail::to($user->email)->send(new PremiumContactMail($user));
 
             AuditLog::registrar(
                 accion:      'email_premium_enviado',
