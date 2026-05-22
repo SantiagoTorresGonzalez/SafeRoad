@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>SafeRoad SC — Seguridad vial en Sabana Centro</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -741,59 +742,42 @@
         setTimeout(() => botReply(reply), 400);
     }
 
-    // ── Flujo Premium ──
-    let premiumStep = 0;
+   // ── Flujo Premium ──
     function startPremiumFlow() {
-        premiumStep = 1;
-        botReply('¡Genial! La IA predictiva de SafeRoad SC aún está en desarrollo. Para mantenerte informado, ¿prefieres que te contactemos por <strong>WhatsApp</strong> o <strong>correo electrónico</strong>?');
+        botReply('¡Genial! ¿Quieres que te enviemos toda la información del plan Premium a tu correo registrado?');
         const qb = document.getElementById('quick-btns');
         if (qb) {
             qb.innerHTML = `
-                <button class="quick-btn" onclick="premiumContact('whatsapp')">📱 WhatsApp</button>
-                <button class="quick-btn" onclick="premiumContact('email')">📧 Correo electrónico</button>
+                <button class="quick-btn" onclick="sendPremiumEmail()">📧 Sí, enviar a mi correo</button>
+                <button class="quick-btn" onclick="botReply('¡Sin problema! Puedes consultarnos cuando quieras. 😊')">No por ahora</button>
             `;
         }
     }
 
-    function premiumContact(channel) {
-        premiumStep = 2;
-        userMsg(channel === 'whatsapp' ? '📱 WhatsApp' : '📧 Correo electrónico');
-        window._premiumChannel = channel;
-        const label = channel === 'whatsapp' ? 'número de WhatsApp (con indicativo)' : 'dirección de correo electrónico';
-        setTimeout(() => botReply(`Perfecto. Por favor escríbeme tu ${label} y te contactaremos pronto.`), 400);
+    function sendPremiumEmail() {
         const qb = document.getElementById('quick-btns');
         if (qb) qb.innerHTML = '';
-        const input = document.getElementById('chat-input');
-        if (input) {
-            input.placeholder = channel === 'whatsapp' ? 'Ej: +57 300 123 4567' : 'Ej: tu@correo.com';
-            input.onkeydown = function(e) { if (e.key === 'Enter') sendPremiumData(); };
-        }
-        const btn = document.querySelector('.chat-send');
-        if (btn) btn.onclick = sendPremiumData;
-    }
+        userMsg('📧 Sí, enviar a mi correo');
 
-    function sendPremiumData() {
-        const input   = document.getElementById('chat-input');
-        const contact = input.value.trim();
-        if (!contact) return;
-        input.value = '';
-        userMsg(contact);
-
-        // Enviar al backend
         fetch('{{ route("chatbot.premium") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
             },
-            body: JSON.stringify({ canal: window._premiumChannel, contacto: contact })
-        }).catch(() => {}); // silencioso si no existe aún
+            body: JSON.stringify({})
+        })
+        .then(res => res.json())
+        .then(data => {
+            botReply(data.message || '✅ ¡Correo enviado! Revisa tu bandeja de entrada.');
+        })
+        .catch(() => {
+            botReply('⚠ No pudimos enviar el correo en este momento. Intenta de nuevo.');
+        });
 
         setTimeout(() => {
-            botReply('✅ ¡Recibido! Hemos registrado tu interés. Pronto te contactaremos con más información sobre SafeRoad SC Premium. ¡Gracias por tu apoyo! 🚀');
-            const qb = document.getElementById('quick-btns');
             if (qb) qb.innerHTML = `<button class="quick-btn" onclick="location.reload()">Volver al inicio</button>`;
-        }, 400);
+        }, 1500);
     }
 </script>
 
