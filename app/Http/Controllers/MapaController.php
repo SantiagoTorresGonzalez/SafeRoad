@@ -10,7 +10,7 @@ class MapaController extends Controller
 {
     public function index()
     {
-        $reportes = ReporteVial::whereIn('estado', ['en_atencion', 'resuelto'])
+        $reportes = ReporteVial::whereIn('estado', ['validado', 'en_atencion', 'resuelto'])
             ->select('id', 'tipo_riesgo', 'descripcion', 'latitud', 'longitud', 'municipio', 'estado')
             ->get();
 
