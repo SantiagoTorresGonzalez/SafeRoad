@@ -2,18 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\PremiumContactMail;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class ChatbotController extends Controller
 {
-    /**
-     * Envía email premium al usuario autenticado y registra auditoría.
-     */
     public function premium(Request $request)
     {
         $user = Auth::user();
@@ -26,32 +22,41 @@ class ChatbotController extends Controller
         }
 
         try {
-            // Enviar email con Resend
-            Mail::to($user->email)->send(new PremiumContactMail($user));
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . env('MAILTRAP_API_TOKEN'),
+                'Content-Type'  => 'application/json',
+            ])->post('https://send.api.mailtrap.io/api/send', [
+                'from' => [
+                    'email' => 'hello@saferoadsc.com',
+                    'name'  => 'SafeRoad SC',
+                ],
+                'to' => [
+                    ['email' => $user->email, 'name' => $user->name],
+                ],
+                'subject'   => 'SafeRoad SC – Tu acceso al módulo de Predicción con IA',
+                'html'      => view('emails.premium_contact', ['user' => $user])->render(),
+            ]);
 
-            // Auditoría en BD
+            if (!$response->successful()) {
+                throw new \Exception('Mailtrap API error: ' . $response->body());
+            }
+
             AuditLog::registrar(
                 accion:      'email_premium_enviado',
                 entidad:     'User',
                 entidadId:   $user->id,
-                datos:       [
-                    'email'      => $user->email,
-                    'ip'         => $request->ip(),
-                    'user_agent' => $request->userAgent(),
-                ],
+                datos:       ['email' => $user->email, 'ip' => $request->ip()],
                 descripcion: "Email premium enviado a {$user->email}",
             );
 
-            // Log de respaldo
             Log::info('[CHATBOT] Email premium enviado', [
                 'user_id' => $user->id,
                 'email'   => $user->email,
-                'ip'      => $request->ip(),
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => "✅ ¡Listo, {$user->name}! Te enviamos toda la información del plan premium a **{$user->email}**. Revisa tu bandeja de entrada (y la carpeta de spam por si acaso).",
+                'message' => "✅ ¡Listo, {$user->name}! Te enviamos toda la información del plan premium a **{$user->email}**. Revisa tu bandeja de entrada.",
             ]);
 
         } catch (\Exception $e) {
@@ -63,7 +68,7 @@ class ChatbotController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => '⚠ No pudimos enviar el email en este momento. Intenta de nuevo en unos minutos.',
+                'message' => '⚠ No pudimos enviar el email en este momento. Intenta de nuevo.',
             ], 500);
         }
     }
