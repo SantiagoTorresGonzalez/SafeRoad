@@ -53,8 +53,13 @@ class MapaController extends Controller
         ]);
 
         if ($request->hasFile('foto')) {
+        try {
             $data['foto'] = $request->file('foto')->store('reportes', 'public');
+        } catch (\Exception $e) {
+            \Log::warning('No se pudo guardar foto: ' . $e->getMessage());
+            // Continúa sin foto — no bloquea el reporte
         }
+    }
 
         ReporteVial::create($data);
 
